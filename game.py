@@ -20,6 +20,15 @@ STATE_SPENT = 2
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 900
 
+# margins
+LEFT_MARGIN = 50
+SHIP_WIDTH = 200
+SHIP_HEIGHT = 200
+SHIP_GAP = 25
+
+TOP_ROW = 50
+BOTTOM_ROW = 400
+
 def main():
 
 	global DISPLAYSURF
@@ -63,7 +72,6 @@ def main():
 				
 		trackCoords(fontObj, mousex, mousey)				
 		drawShips(playerShips, opponentShips, hovered)
-				
 		
 		pygame.display.update()
 
@@ -87,16 +95,16 @@ def drawShips(playerShips, opponentShips, highlighted):
 		DISPLAYSURF.blit(image, getShipRectByIndex(index, False))
 		
 def drawShip(ship, highlighted):
-	image = pygame.Surface((200,200));
+	image = pygame.Surface((SHIP_WIDTH,SHIP_HEIGHT));
 	
 	outline_color = OUTLINE_SPENT if ship.state == STATE_SPENT else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
 	
-	pygame.draw.rect(image, outline_color, (0, 0, 200, 200), 10)
-	pygame.draw.circle(image, BLUE, (100, 100), 50)
+	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
+	pygame.draw.circle(image, BLUE, (SHIP_WIDTH / 2, SHIP_HEIGHT / 2), SHIP_WIDTH / 4)
 	return image	
 
-def getShipRectByIndex(index, top):
-	return pygame.Rect(50 + 225 * index, 50 if top else 400, 200, 200)
+def getShipRectByIndex(index, player):
+	return pygame.Rect(LEFT_MARGIN + (SHIP_WIDTH + SHIP_GAP) * index, BOTTOM_ROW if player else TOP_ROW, SHIP_WIDTH, SHIP_HEIGHT)
 
 def getPlayerHoveredShip(mousex, mousey, ships):
 	for index, ship in enumerate(ships):
