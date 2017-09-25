@@ -11,7 +11,8 @@ BLUE = (0, 0, 128)
 OUTLINE_SPENT = (100, 100, 100)
 OUTLINE_SLOW = (150, 150, 150)
 OUTLINE_READY = (150, 255, 150)
-OUTLINE_HIGHLIGHT = (0,255,0)
+OUTLINE_HIGHLIGHT = (75,255,75)
+OUTLINE_SELECTED = (0, 255, 0)
 
 # ship states
 STATE_READY = 1
@@ -52,9 +53,12 @@ def main():
 	opponentShips = [makeShip(3)]
 
 	selectedShip = None
+	selectedAction = None
+	selectedOpponent = None
 	friendlyHovered = None
 	opponentHovered = None
-	
+	actionHovered = None
+
 	# main loop
 	while True:
 
@@ -72,16 +76,26 @@ def main():
 				mousex, mousey = event.pos
 				mouseClicked = True
 
-		if selectedShip:
-			drawActionBar(friendlyHovered.actions, fontObj)
+		if selectedAction:
 			opponentHovered = getOpponentHoveredShip(mousex, mousey, opponentShips)
-		else:
-			friendlyHovered = getPlayerHoveredShip(mousex, mousey, playerShips)
-			if mouseClicked and friendlyHovered:
-				selectedShip = friendlyHovered
+			if mouseClicked and opponentHovered:
+				selectedOpponent = opponentHovered
+		
+		if selectedShip:
+			actionHovered = hoveredAction(mousex, mousey, selectedShip.actions)
+			drawActionBar(fontObj, selectedShip.actions, (selectedAction, ), (actionHovered, ))
+			if mouseClicked and actionHovered:
+				selectedAction = actionHovered
+				selectedOpponent = None
+
+		friendlyHovered = getPlayerHoveredShip(mousex, mousey, playerShips)
+		if mouseClicked and friendlyHovered:
+			selectedShip = friendlyHovered
+			selectedAction = None
+			selectedOpponent = None
 				
 		trackCoords(fontObj, mousex, mousey)				
-		drawShips(playerShips, opponentShips, (friendlyHovered, opponentHovered))
+		drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
 		
 
 
@@ -97,35 +111,36 @@ def trackCoords(fontObj, mousex, mousey):
 def makeShip(hull):
         return Ship(hull);
 
-def drawShips(playerShips, opponentShips, highlighted):
+def drawShips(playerShips, opponentShips, selected, highlighted):
 	for index, ship in enumerate(playerShips):
-		image = drawShip(ship, True if ship in highlighted else False)
+		image = drawShip(ship, ship in selected, ship in highlighted)
 		DISPLAYSURF.blit(image, getShipRectByIndex(index, True))
 
 	for index, ship in enumerate(opponentShips):
-		image = drawShip(ship, True if ship in highlighted else False)
+		image = drawShip(ship, ship in selected, ship in highlighted)
 		DISPLAYSURF.blit(image, getShipRectByIndex(index, False))
 		
-def drawShip(ship, highlighted):
+def drawShip(ship, selected, highlighted):
 	image = pygame.Surface((SHIP_WIDTH,SHIP_HEIGHT))
 	
-	outline_color = OUTLINE_SPENT if ship.state == STATE_SPENT else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
+	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if ship.state == STATE_SPENT else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
 	
 	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
 	pygame.draw.circle(image, BLUE, (SHIP_WIDTH / 2, SHIP_HEIGHT / 2), SHIP_WIDTH / 4)
 	return image	
 
-def drawActionBar(actions, fontObj):
+def drawActionBar(fontObj, actions, selected, highlighted):
 	for index, action in enumerate(actions):
-		image = drawWeapon(fontObj, action)
+		image = drawWeapon(fontObj, action, action in selected, action in highlighted)
 		DISPLAYSURF.blit(image, getActionSlot(index))
 
 def getActionSlot(index):
 	return pygame.Rect(LEFT_MARGIN + (ACTION_WIDTH + ACTION_GAP) * index, ACTION_ROW, ACTION_WIDTH, ACTION_HEIGHT)
 
-def drawWeapon(fontObj, Weapon):
+def drawWeapon(fontObj, Weapon, selected, highlighted):
 	image = pygame.Surface((ACTION_WIDTH,ACTION_HEIGHT))
-	pygame.draw.rect(image, BLUE, (0, 0, ACTION_WIDTH, ACTION_HEIGHT), 10)
+	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if Weapon.spent else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
+	pygame.draw.rect(image, outline_color, (0, 0, ACTION_WIDTH, ACTION_HEIGHT), 10)
 
 	textSurfaceObj = fontObj.render('R: ' + str(Weapon.rolls) + ', A:' + str(Weapon.accuracy) + ', D:' + str(Weapon.damage), True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
@@ -151,6 +166,12 @@ def getHoveredShip(mousex, mousey, ships, player):
 			return ship
 	return None
 
+def hoveredAction(mousex, mousey, actions):
+	for index, action in enumerate(actions):
+		rect = getActionSlot(index)
+		if rect.collidepoint(mousex, mousey):
+			return action
+	return None
 	
 class Ship:
 	def __init__(self, hull):
@@ -170,6 +191,7 @@ class Weapon:
 		self.rolls = rolls
 		self.accuracy = accuracy
 		self.damage = damage
+		self.spent = False
 
 
 if __name__ == '__main__':
