@@ -33,6 +33,10 @@ ACTION_ROW = 650
 ACTION_WIDTH = 150
 ACTION_HEIGHT = 150
 ACTION_GAP = 25
+CONFIRM_WIDTH = 200
+CONFIRM_HEIGHT = 200
+CONFIRM_LEFT_MARGIN = 800
+CONFIRM_TOP_MARGIN = 500
 
 def main():
 
@@ -97,7 +101,16 @@ def main():
 		trackCoords(fontObj, mousex, mousey)				
 		drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
 		
-
+		if selectedShip and selectedOpponent and selectedAction:
+			confirmHovered = confirmButtonIsHovered(mousex,mousey)
+			image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
+			DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
+			if mouseClicked and confirmHovered:
+				selectedShip.spend()
+				selectedAction.spend()
+				selectedShip = None
+				selectedAction = None
+				selectedOpponent = None
 
 		pygame.display.update()
 
@@ -149,6 +162,21 @@ def drawWeapon(fontObj, Weapon, selected, highlighted):
 
 	return image
 	
+def drawConfirmAction(fontObj, ship, weapon, target, highlighted):
+	image = pygame.Surface((CONFIRM_WIDTH,CONFIRM_HEIGHT))
+
+	outline_color = OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
+	pygame.draw.rect(image, outline_color, (0, 0, CONFIRM_WIDTH, CONFIRM_HEIGHT), 10)
+
+	textSurfaceObj = fontObj.render('FIRE!', True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.center = (CONFIRM_WIDTH / 2, CONFIRM_HEIGHT /2)
+	image.blit(textSurfaceObj, textRectObj)
+	
+	return image
+
+def confirmButtonIsHovered(mousex, mousey):
+	return pygame.Rect(CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN, CONFIRM_WIDTH, CONFIRM_HEIGHT).collidepoint(mousex, mousey)
 
 def getShipRectByIndex(index, player):
 	return pygame.Rect(LEFT_MARGIN + (SHIP_WIDTH + SHIP_GAP) * index, BOTTOM_ROW if player else TOP_ROW, SHIP_WIDTH, SHIP_HEIGHT)
@@ -193,6 +221,11 @@ class Weapon:
 		self.damage = damage
 		self.spent = False
 
+	def spend(self):
+		self.spent = True
+
+	def refresh(self):
+		self.spent = False
 
 if __name__ == '__main__':
     main()
