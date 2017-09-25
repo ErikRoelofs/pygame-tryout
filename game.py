@@ -106,9 +106,7 @@ def main():
 			image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
 			DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
 			if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
-				selectedShip.spend()
-				selectedAction.spend()
-				selectedOpponent.takeDamage(1)
+				selectedShip.performAttack(selectedAction, selectedOpponent)
 				selectedShip = None
 				selectedAction = None
 				selectedOpponent = None
@@ -224,6 +222,14 @@ class Ship:
 
 	def available(self):
 		return self.state == STATE_READY
+
+	def performAttack(self, weapon, target):
+		self.spend()
+		weapon.spend()
+		target.resolveAttackOnMe(weapon)
+
+	def resolveAttackOnMe(self, weapon):
+		self.takeDamage(1)
 
 	def takeDamage(self, amount):
 		self.damage += amount
