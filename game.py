@@ -40,7 +40,7 @@ CONFIRM_TOP_MARGIN = 500
 
 def main():
 
-	global DISPLAYSURF
+	global DISPLAYSURF, fontObj
 
 	pygame.init()
 	DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -105,9 +105,10 @@ def main():
 			confirmHovered = confirmButtonIsHovered(mousex,mousey)
 			image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
 			DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
-			if mouseClicked and confirmHovered:
+			if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
 				selectedShip.spend()
 				selectedAction.spend()
+				selectedOpponent.takeDamage(1)
 				selectedShip = None
 				selectedAction = None
 				selectedOpponent = None
@@ -140,6 +141,13 @@ def drawShip(ship, selected, highlighted):
 	
 	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
 	pygame.draw.circle(image, BLUE, (SHIP_WIDTH / 2, SHIP_HEIGHT / 2), SHIP_WIDTH / 4)
+
+	textSurfaceObj = fontObj.render(str(ship.hull - ship.damage) + ' / ' + str(ship.hull), True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.left = SHIP_WIDTH - 40
+	textRectObj.top = SHIP_HEIGHT - 25
+	image.blit(textSurfaceObj, textRectObj)
+
 	return image	
 
 def drawActionBar(fontObj, actions, selected, highlighted):
@@ -165,7 +173,7 @@ def drawWeapon(fontObj, Weapon, selected, highlighted):
 def drawConfirmAction(fontObj, ship, weapon, target, highlighted):
 	image = pygame.Surface((CONFIRM_WIDTH,CONFIRM_HEIGHT))
 
-	outline_color = OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
+	outline_color = OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY if ship.available() and weapon.available() else OUTLINE_SPENT
 	pygame.draw.rect(image, outline_color, (0, 0, CONFIRM_WIDTH, CONFIRM_HEIGHT), 10)
 
 	textSurfaceObj = fontObj.render('FIRE!', True, WHITE)
@@ -214,6 +222,12 @@ class Ship:
 	def refresh(self):
 		self.state = STATE_READY
 
+	def available(self):
+		return self.state == STATE_READY
+
+	def takeDamage(self, amount):
+		self.damage += amount
+
 class Weapon:
 	def __init__(self, rolls, accuracy, damage):
 		self.rolls = rolls
@@ -226,6 +240,9 @@ class Weapon:
 
 	def refresh(self):
 		self.spent = False
+
+	def available(self):
+		return not self.spent
 
 if __name__ == '__main__':
     main()
