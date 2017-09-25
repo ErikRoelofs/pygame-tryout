@@ -111,6 +111,9 @@ def main():
 				selectedAction = None
 				selectedOpponent = None
 
+		if turnShouldEnd(playerShips, opponentShips):
+			nextTurn(playerShips, opponentShips)
+
 		pygame.display.update()
 
 def trackCoords(fontObj, mousex, mousey):
@@ -206,7 +209,22 @@ def hoveredAction(mousex, mousey, actions):
 		if rect.collidepoint(mousex, mousey):
 			return action
 	return None
+
+def turnShouldEnd(playerShips, opponentShips):
+	for ship in playerShips:
+		if ship.available():
+			return False
+#	for ship in opponentShips:
+#		if ship.available():
+#			return False
+	return True	
 	
+def nextTurn(playerShips, opponentShips):
+	for ship in playerShips:
+		ship.refresh()
+	for ship in opponentShips:
+		ship.refresh()
+
 class Ship:
 	def __init__(self, hull):
 		self.hull = hull                
@@ -219,11 +237,14 @@ class Ship:
 		
 	def refresh(self):
 		self.state = STATE_READY
+		for action in self.actions:
+			action.refresh()
 
 	def available(self):
 		return self.state == STATE_READY
 
 	def performAttack(self, weapon, target):
+		assert weapon in self.actions, "Cannot fire a weapon that is not on the ship!"
 		self.spend()
 		weapon.spend()
 		target.resolveAttackOnMe(weapon)
