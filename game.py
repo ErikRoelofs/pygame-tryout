@@ -53,8 +53,8 @@ def main():
 	# font test
 	fontObj = pygame.font.Font('freesansbold.ttf', 16)
 	
-	playerShips = [makeShip(3), makeShip(3)]
-	opponentShips = [makeShip(3)]
+	playerShips = [Ship(3, [Weapon(2,3,2), Weapon(3,5,3)]), Ship(3, [Weapon(4,3,2), Weapon(5,5,3)])]
+	opponentShips = [Ship(3, [Weapon(4,3,2), Weapon(6,5,3)])]
 
 	selectedShip = None
 	selectedAction = None
@@ -122,9 +122,6 @@ def trackCoords(fontObj, mousex, mousey):
 		textRectObj.right = SCREEN_WIDTH
 		textRectObj.bottom = SCREEN_HEIGHT		
 		DISPLAYSURF.blit(textSurfaceObj, textRectObj)
-		
-def makeShip(hull):
-        return Ship(hull);
 
 def drawShips(playerShips, opponentShips, selected, highlighted):
 	for index, ship in enumerate(playerShips):
@@ -226,10 +223,10 @@ def nextTurn(playerShips, opponentShips):
 		ship.refresh()
 
 class Ship:
-	def __init__(self, hull):
+	def __init__(self, hull, actions):
 		self.hull = hull                
 		self.damage = 0
-		self.actions = [Weapon(4,3,2), Weapon(6,5,3)]
+		self.actions = actions
 		self.state = STATE_READY
 		
 	def spend(self):
