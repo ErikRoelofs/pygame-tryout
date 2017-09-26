@@ -1,4 +1,4 @@
-import pygame, sys, random
+import pygame, sys, random, animations
 from pygame.locals import *
 
 # colors
@@ -43,6 +43,7 @@ CONFIRM_TOP_MARGIN = 500
 def main():
 
 	global DISPLAYSURF, fontObj, MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY, WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED
+	clock = pygame.time.Clock()
 
 	pygame.init()
 	DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -57,6 +58,7 @@ def main():
 	friendlyHovered = None
 	opponentHovered = None
 	actionHovered = None
+	animation = None
 	
 	# make font
 	fontObj = pygame.font.Font('freesansbold.ttf', 16)
@@ -72,7 +74,6 @@ def main():
 
 	playerShips = [Ship(3, [Weapon(2, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(3,MOUNT_HEAVY, WEAPON_LASER)]), Ship(3, [Weapon(4,MOUNT_LIGHT, WEAPON_KINETIC), Weapon(5,MOUNT_MEDIUM, WEAPON_GUIDED)])]
 	opponentShips = [Ship(3, [Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)])]
-
 
 	# main loop
 	while True:
@@ -118,14 +119,21 @@ def main():
 			DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
 			if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
 				selectedShip.performAttack(selectedAction, selectedOpponent)
+				animation = animations.TestAnimation(getShipRectByShip(selectedShip, playerShips,True), getShipRectByShip(selectedOpponent, opponentShips, False), selectedAction.mount.damage(), selectedAction.rolls)
+				animation.redraw()
 				selectedShip = None
 				selectedAction = None
 				selectedOpponent = None
+
+		if animation:
+			DISPLAYSURF.blit(animation.surface(), animation.getPosition())
+			animation.advance(clock.get_time())
 
 		if turnShouldEnd(playerShips, opponentShips):
 			nextTurn(playerShips, opponentShips)
 
 		pygame.display.update()
+		clock.tick(60)
 
 def trackCoords(fontObj, mousex, mousey):
 		textSurfaceObj = fontObj.render(str(mousex) + ', ' + str(mousey), True, GREEN, BLUE)
@@ -246,6 +254,11 @@ def drawConfirmAction(fontObj, ship, weapon, target, highlighted):
 
 def confirmButtonIsHovered(mousex, mousey):
 	return pygame.Rect(CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN, CONFIRM_WIDTH, CONFIRM_HEIGHT).collidepoint(mousex, mousey)
+
+def getShipRectByShip(ship, list, player):
+	for index, someShip in enumerate(list):
+		if ship == someShip:
+			return getShipRectByIndex(index, player)
 
 def getShipRectByIndex(index, player):
 	return pygame.Rect(LEFT_MARGIN + (SHIP_WIDTH + SHIP_GAP) * index, BOTTOM_ROW if player else TOP_ROW, SHIP_WIDTH, SHIP_HEIGHT)
