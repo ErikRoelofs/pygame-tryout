@@ -38,9 +38,11 @@ CONFIRM_HEIGHT = 200
 CONFIRM_LEFT_MARGIN = 800
 CONFIRM_TOP_MARGIN = 500
 
+
+
 def main():
 
-	global DISPLAYSURF, fontObj
+	global DISPLAYSURF, fontObj, MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY, WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED
 
 	pygame.init()
 	DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -49,19 +51,28 @@ def main():
 	# setup vars
 	mousex = 0
 	mousey = 0	
-	
-	# font test
-	fontObj = pygame.font.Font('freesansbold.ttf', 16)
-	
-	playerShips = [Ship(3, [Weapon(2,3,2), Weapon(3,5,3)]), Ship(3, [Weapon(4,3,2), Weapon(5,5,3)])]
-	opponentShips = [Ship(3, [Weapon(4,3,2), Weapon(6,5,3)])]
-
 	selectedShip = None
 	selectedAction = None
 	selectedOpponent = None
 	friendlyHovered = None
 	opponentHovered = None
 	actionHovered = None
+	
+	# make font
+	fontObj = pygame.font.Font('freesansbold.ttf', 16)
+
+	# game setup	
+	MOUNT_LIGHT = Mount(2,1)
+	MOUNT_MEDIUM = Mount(4,2)
+	MOUNT_HEAVY = Mount(5,3)
+
+	WEAPON_LASER = WeaponType("laser")
+	WEAPON_KINETIC = WeaponType("kinetic")
+	WEAPON_GUIDED = WeaponType("guided")
+
+	playerShips = [Ship(3, [Weapon(2, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(3,MOUNT_HEAVY, WEAPON_LASER)]), Ship(3, [Weapon(4,MOUNT_LIGHT, WEAPON_KINETIC), Weapon(5,MOUNT_MEDIUM, WEAPON_GUIDED)])]
+	opponentShips = [Ship(3, [Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)])]
+
 
 	# main loop
 	while True:
@@ -156,18 +167,53 @@ def drawActionBar(fontObj, actions, selected, highlighted):
 def getActionSlot(index):
 	return pygame.Rect(LEFT_MARGIN + (ACTION_WIDTH + ACTION_GAP) * index, ACTION_ROW, ACTION_WIDTH, ACTION_HEIGHT)
 
-def drawWeapon(fontObj, Weapon, selected, highlighted):
+def drawWeapon(fontObj, weapon, selected, highlighted):
 	image = pygame.Surface((ACTION_WIDTH,ACTION_HEIGHT))
-	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if Weapon.spent else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
+	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if not weapon.available() else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
 	pygame.draw.rect(image, outline_color, (0, 0, ACTION_WIDTH, ACTION_HEIGHT), 10)
 
-	textSurfaceObj = fontObj.render('R: ' + str(Weapon.rolls) + ', A:' + str(Weapon.accuracy) + ', D:' + str(Weapon.damage), True, WHITE)
-	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (ACTION_WIDTH / 2, ACTION_HEIGHT / 2)
-	image.blit(textSurfaceObj, textRectObj)
-
-	return image
+	weaponTypeImg = drawWeaponType(weapon.weaponType)
+	weaponTypeRect = weaponTypeImg.get_rect()
+	weaponTypeRect.center = (ACTION_WIDTH / 4, ACTION_HEIGHT / 2)
+	image.blit(weaponTypeImg, weaponTypeRect)
 	
+	mountImg = drawMount(weapon.mount)
+	mountRect = mountImg.get_rect()
+	mountRect.center = (ACTION_WIDTH / 2, ACTION_HEIGHT / 2)
+	image.blit(mountImg, mountRect)
+	
+	return image
+
+def drawMount(mount):
+	assert mount in (MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY), "Pass a MOUNT to the drawMount function."
+
+	image = pygame.Surface((40,40))
+	pygame.draw.rect(image, BLUE, (0, 0, 50, 50), 3)
+	
+	text = "L" if mount == MOUNT_LIGHT else "M" if mount == MOUNT_MEDIUM else "H"
+
+	textSurfaceObj = fontObj.render(text, True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.center = (25, 25)
+	image.blit(textSurfaceObj, textRectObj)
+	
+	return image
+
+def drawWeaponType(weaponType):
+	assert weaponType in (WEAPON_KINETIC, WEAPON_LASER, WEAPON_GUIDED), "Pass a WEAPONTYPE to the drawWeaponType function."
+
+	image = pygame.Surface((40,40))
+	pygame.draw.rect(image, BLUE, (0, 0, 50, 50), 3)
+	
+	text = "K" if weaponType == WEAPON_KINETIC else "L" if weaponType == WEAPON_LASER else "G"
+
+	textSurfaceObj = fontObj.render(text, True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.center = (25, 25)
+	image.blit(textSurfaceObj, textRectObj)
+	
+	return image
+
 def drawConfirmAction(fontObj, ship, weapon, target, highlighted):
 	image = pygame.Surface((CONFIRM_WIDTH,CONFIRM_HEIGHT))
 
@@ -253,10 +299,10 @@ class Ship:
 		self.damage += amount
 
 class Weapon:
-	def __init__(self, rolls, accuracy, damage):
+	def __init__(self, rolls, mount, weaponType):
 		self.rolls = rolls
-		self.accuracy = accuracy
-		self.damage = damage
+		self.mount = mount
+		self.weaponType = weaponType
 		self.spent = False
 
 	def spend(self):
@@ -267,6 +313,25 @@ class Weapon:
 
 	def available(self):
 		return not self.spent
+
+class Mount:
+	accuracy = 0
+	damage = 0
+	def __init__(self, theAccuracy, theDamage):
+		accuracy = theAccuracy
+		damage = theDamage
+
+	def accuracy():
+		return accuracy
+	def damage():
+		return damage
+
+class WeaponType:
+	name = ""
+	def __init__(self, theName):
+		name = theName
+	def name():
+		return name
 
 if __name__ == '__main__':
     main()
