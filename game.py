@@ -1,4 +1,4 @@
-import pygame, sys
+import pygame, sys, random
 from pygame.locals import *
 
 # colors
@@ -149,7 +149,7 @@ def drawShip(ship, selected, highlighted):
 	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if ship.state == STATE_SPENT else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
 	
 	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
-	pygame.draw.circle(image, BLUE, (SHIP_WIDTH / 2, SHIP_HEIGHT / 2), SHIP_WIDTH / 4)
+	pygame.draw.circle(image, BLUE, (SHIP_WIDTH // 2, SHIP_HEIGHT // 2), SHIP_WIDTH // 4)
 
 	textSurfaceObj = fontObj.render(str(ship.hull - ship.damage) + ' / ' + str(ship.hull), True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
@@ -172,29 +172,34 @@ def drawWeapon(fontObj, weapon, selected, highlighted):
 	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if not weapon.available() else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
 	pygame.draw.rect(image, outline_color, (0, 0, ACTION_WIDTH, ACTION_HEIGHT), 10)
 
-	weaponTypeImg = drawWeaponType(weapon.weaponType)
-	weaponTypeRect = weaponTypeImg.get_rect()
-	weaponTypeRect.center = (ACTION_WIDTH / 4, ACTION_HEIGHT / 2)
-	image.blit(weaponTypeImg, weaponTypeRect)
-	
+	rollsImg = drawWeaponRolls(weapon.rolls)
+	rollsRect = rollsImg.get_rect()
+	rollsRect.center = (ACTION_WIDTH / 4, ACTION_HEIGHT / 2 )
+	image.blit(rollsImg, rollsRect)
+
 	mountImg = drawMount(weapon.mount)
 	mountRect = mountImg.get_rect()
 	mountRect.center = (ACTION_WIDTH / 2, ACTION_HEIGHT / 2)
 	image.blit(mountImg, mountRect)
-	
+
+	weaponTypeImg = drawWeaponType(weapon.weaponType)
+	weaponTypeRect = weaponTypeImg.get_rect()
+	weaponTypeRect.center = (ACTION_WIDTH / 4 * 3, ACTION_HEIGHT / 2)
+	image.blit(weaponTypeImg, weaponTypeRect)
+
 	return image
 
 def drawMount(mount):
 	assert mount in (MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY), "Pass a MOUNT to the drawMount function."
 
 	image = pygame.Surface((40,40))
-	pygame.draw.rect(image, BLUE, (0, 0, 50, 50), 3)
+	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
 	
 	text = "L" if mount == MOUNT_LIGHT else "M" if mount == MOUNT_MEDIUM else "H"
 
 	textSurfaceObj = fontObj.render(text, True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (25, 25)
+	textRectObj.center = (20, 20)
 	image.blit(textSurfaceObj, textRectObj)
 	
 	return image
@@ -203,15 +208,27 @@ def drawWeaponType(weaponType):
 	assert weaponType in (WEAPON_KINETIC, WEAPON_LASER, WEAPON_GUIDED), "Pass a WEAPONTYPE to the drawWeaponType function."
 
 	image = pygame.Surface((40,40))
-	pygame.draw.rect(image, BLUE, (0, 0, 50, 50), 3)
+	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
 	
 	text = "K" if weaponType == WEAPON_KINETIC else "L" if weaponType == WEAPON_LASER else "G"
 
 	textSurfaceObj = fontObj.render(text, True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (25, 25)
+	textRectObj.center = (20, 20)
 	image.blit(textSurfaceObj, textRectObj)
 	
+	return image
+
+def drawWeaponRolls(rolls):
+
+	image = pygame.Surface((40, 40))
+	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
+
+	textSurfaceObj = fontObj.render(str(rolls), True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.center = (20, 20)
+	image.blit(textSurfaceObj, textRectObj)
+
 	return image
 
 def drawConfirmAction(fontObj, ship, weapon, target, highlighted):
@@ -293,7 +310,9 @@ class Ship:
 		target.resolveAttackOnMe(weapon)
 
 	def resolveAttackOnMe(self, weapon):
-		self.takeDamage(1)
+		for attack in range(weapon.rolls):
+			if( random.randint(1, 6) >= weapon.mount.accuracy()):
+				self.takeDamage( weapon.mount.damage() )
 
 	def takeDamage(self, amount):
 		self.damage += amount
@@ -315,23 +334,20 @@ class Weapon:
 		return not self.spent
 
 class Mount:
-	accuracy = 0
-	damage = 0
 	def __init__(self, theAccuracy, theDamage):
-		accuracy = theAccuracy
-		damage = theDamage
+		self._accuracy = theAccuracy
+		self._damage = theDamage
 
-	def accuracy():
-		return accuracy
-	def damage():
-		return damage
+	def accuracy(self):
+		return self._accuracy
+	def damage(self):
+		return self._damage
 
 class WeaponType:
-	name = ""
 	def __init__(self, theName):
-		name = theName
-	def name():
-		return name
+		self._name = theName
+	def name(self):
+		return self._name
 
 if __name__ == '__main__':
     main()
