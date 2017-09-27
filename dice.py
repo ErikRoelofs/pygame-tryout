@@ -31,7 +31,7 @@ class DiceTray(animations.Animation):
     def advance(self, dt):
         result = False
         for die in self.dice:
-            result = result or die.advance(dt)
+            result = die.advance(dt) or result
         if result:
             self.redraw()
 
@@ -43,6 +43,12 @@ class DiceTray(animations.Animation):
     def getPosition(self):
         return (DICE_MARGIN, DICE_ROW)
 
+    def completed(self):
+        completed = True
+        for die in self.dice:
+            completed = completed and die.completed()
+        return completed
+
 class Die(animations.Animation):
 
     def __init__(self, fontObj, result, required, slotnum):
@@ -53,7 +59,9 @@ class Die(animations.Animation):
         self.__surface = pygame.Surface((DICE_WIDTH,DICE_HEIGHT))
         self.timer = 0
         self.lastDrawn = 0
-        self.maxDuration = 2000
+        self.finalized = False
+        self.jumbleDuration = 2000
+        self.duration = 3000
         self.delay = 25
         self.delayDx = 10
         self._redraw(False)
@@ -63,7 +71,10 @@ class Die(animations.Animation):
 
     def advance(self, dt):
         self.timer += dt
-        if self.timer > self.maxDuration:
+
+        if self.finalized:
+            return False
+        elif self.timer > self.jumbleDuration:
             self._redraw(True)
             return True
         elif self.timer > self.lastDrawn:
@@ -78,6 +89,7 @@ class Die(animations.Animation):
 
         if final:
             roll = self.result
+            self.finalized = True
         else:
             roll = random.randint(1,6)
 
@@ -94,3 +106,6 @@ class Die(animations.Animation):
 
     def getPosition(self):
         return (DICE_MARGIN + (DICE_WIDTH + DICE_GAP) * self.slotnum, DICE_ROW)
+
+    def completed(self):
+        return self.timer >= self.duration

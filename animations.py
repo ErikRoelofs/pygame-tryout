@@ -13,6 +13,9 @@ class Animation:
     def getPosition(self):
         raise NotImplementedError("Should have implemented 'getPosition' method; it must return (int, int).")
 
+    def completed(self):
+        raise NotImplementedError("Should have implemented 'completed' method; it must return bool")
+
 class TestAnimation(Animation):
     def __init__(self, origin, target, size, amount ):
         assert isinstance(origin, pygame.Rect), "origin should be a Rect"
@@ -23,6 +26,7 @@ class TestAnimation(Animation):
         self.amount = amount
         self.timer = 0
         self.lastDrawn = 0
+        self.duration = 3000
 
         width, height = self._getSurfaceSize()
         image = pygame.Surface((width, height))
@@ -76,3 +80,6 @@ class TestAnimation(Animation):
         impact = self.randomSurfacePointInTarget()
         pygame.draw.line(self.__surface, RED, self.randomSurfacePointInOrigin(), impact, self.size)
         pygame.draw.circle(self.__surface, RED, impact, self.size*3)
+
+    def completed(self):
+        return self.timer >= self.duration

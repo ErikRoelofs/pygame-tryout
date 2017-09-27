@@ -59,8 +59,8 @@ def main():
 	friendlyHovered = None
 	opponentHovered = None
 	actionHovered = None
-	animation = None
-	
+	currentAnimations = []
+
 	# make font
 	fontObj = pygame.font.Font('freesansbold.ttf', 16)
 
@@ -82,7 +82,10 @@ def main():
 		mouseClicked = False
 		
 		DISPLAYSURF.fill(BG_COLOR)
-			
+
+		trackCoords(fontObj, mousex, mousey, clock.get_fps())
+		drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
+
 		for event in pygame.event.get():
 			if event.type == QUIT:
 				pygame.quit()
@@ -93,45 +96,51 @@ def main():
 				mousex, mousey = event.pos
 				mouseClicked = True
 
-		if selectedAction:
-			opponentHovered = getOpponentHoveredShip(mousex, mousey, opponentShips)
-			if mouseClicked and opponentHovered:
-				selectedOpponent = opponentHovered
-		
-		if selectedShip:
-			actionHovered = hoveredAction(mousex, mousey, selectedShip.actions)
-			drawActionBar(fontObj, selectedShip.actions, (selectedAction, ), (actionHovered, ))
-			if mouseClicked and actionHovered:
-				selectedAction = actionHovered
-				selectedOpponent = None
+		if not len(currentAnimations):
+			if selectedAction:
+				opponentHovered = getOpponentHoveredShip(mousex, mousey, opponentShips)
+				if mouseClicked and opponentHovered:
+					selectedOpponent = opponentHovered
 
-		friendlyHovered = getPlayerHoveredShip(mousex, mousey, playerShips)
-		if mouseClicked and friendlyHovered:
-			selectedShip = friendlyHovered
-			selectedAction = None
-			selectedOpponent = None
-				
-		trackCoords(fontObj, mousex, mousey)				
-		drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
-		
-		if selectedShip and selectedOpponent and selectedAction:
-			confirmHovered = confirmButtonIsHovered(mousex,mousey)
-			image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
-			DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
-			if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
-				selectedShip.performAttack(selectedAction, selectedOpponent)
-				#animation = animations.TestAnimation(getShipRectByShip(selectedShip, playerShips,True), getShipRectByShip(selectedOpponent, opponentShips, False), selectedAction.mount.damage(), selectedAction.rolls)
-				results = []
-				for i in range(0, selectedAction.rolls):
-					results.append(random.randint(1,6))
-				animation = dice.DiceTray(fontObj, results, selectedAction.mount.accuracy())
-				selectedShip = None
+			if selectedShip:
+				actionHovered = hoveredAction(mousex, mousey, selectedShip.actions)
+				drawActionBar(fontObj, selectedShip.actions, (selectedAction, ), (actionHovered, ))
+				if mouseClicked and actionHovered:
+					selectedAction = actionHovered
+					selectedOpponent = None
+
+			friendlyHovered = getPlayerHoveredShip(mousex, mousey, playerShips)
+			if mouseClicked and friendlyHovered:
+				selectedShip = friendlyHovered
 				selectedAction = None
 				selectedOpponent = None
 
-		if animation:
-			DISPLAYSURF.blit(animation.surface(), animation.getPosition())
-			animation.advance(clock.get_time())
+			if selectedShip and selectedOpponent and selectedAction:
+				confirmHovered = confirmButtonIsHovered(mousex,mousey)
+				image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
+				DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
+				if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
+					attack = selectedShip.performAttack(selectedAction, selectedOpponent)
+					currentAnimations.append(animations.TestAnimation(getShipRectByShip(selectedShip, playerShips,True), getShipRectByShip(selectedOpponent, opponentShips, False), selectedAction.mount.damage(), selectedAction.rolls))
+					currentAnimations.append(dice.DiceTray(fontObj, attack.results, selectedAction.mount.accuracy()))
+					selectedShip = None
+					selectedAction = None
+					selectedOpponent = None
+
+		# there are animations; render them
+		else:
+			if mouseClicked:
+				currentAnimations = []
+
+			for animation in currentAnimations:
+				DISPLAYSURF.blit(animation.surface(), animation.getPosition())
+				animation.advance(clock.get_time())
+				currentAnimations = [x for x in currentAnimations if not x.completed()]
+
+			# when all animations finish, apply result of previous attack
+			if not len(currentAnimations) and attack:
+				attack.apply()
+				attack = None
 
 		if turnShouldEnd(playerShips, opponentShips):
 			nextTurn(playerShips, opponentShips)
@@ -139,8 +148,8 @@ def main():
 		pygame.display.update()
 		clock.tick(60)
 
-def trackCoords(fontObj, mousex, mousey):
-		textSurfaceObj = fontObj.render(str(mousex) + ', ' + str(mousey), True, GREEN, BLUE)
+def trackCoords(fontObj, mousex, mousey, fps):
+		textSurfaceObj = fontObj.render(str(mousex) + ', ' + str(mousey) + ' @' + str(fps) + 'fps', True, GREEN, BLUE)
 		textRectObj = textSurfaceObj.get_rect()
 		textRectObj.right = SCREEN_WIDTH
 		textRectObj.bottom = SCREEN_HEIGHT		
@@ -324,11 +333,11 @@ class Ship:
 		assert weapon in self.actions, "Cannot fire a weapon that is not on the ship!"
 		self.spend()
 		weapon.spend()
-		target.resolveAttackOnMe(weapon)
+		return Attack(self, weapon, target)
 
-	def resolveAttackOnMe(self, weapon):
-		for attack in range(weapon.rolls):
-			if( random.randint(1, 6) >= weapon.mount.accuracy()):
+	def resolveAttackOnMe(self, attacker, weapon, results):
+		for result in results:
+			if( result >= weapon.mount.accuracy()):
 				self.takeDamage( weapon.mount.damage() )
 
 	def takeDamage(self, amount):
@@ -365,6 +374,21 @@ class WeaponType:
 		self._name = theName
 	def name(self):
 		return self._name
+
+class Attack:
+	def __init__(self, attacker, weapon, target):
+		self.attacker = attacker
+		self.weapon = weapon
+		self.target = target
+		self.results = []
+		self.applied = False
+		for i in range(0, self.weapon.rolls):
+			self.results.append(random.randint(1, 6))
+
+	def apply(self):
+		assert not self.applied, "This attack has already been applied!"
+		self.applied = True
+		self.target.resolveAttackOnMe(self.attacker, self.weapon, self.results)
 
 if __name__ == '__main__':
     main()
