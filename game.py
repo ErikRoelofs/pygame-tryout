@@ -5,6 +5,9 @@ from pygame.locals import *
 STATE_READY = 1
 STATE_SPENT = 2
 
+# ship events
+EVENT_DESTROYED = 1;
+
 # colors
 BG_COLOR = (0, 0, 0)
 WHITE = (255,255,255)
@@ -39,7 +42,17 @@ CONFIRM_HEIGHT = 200
 CONFIRM_LEFT_MARGIN = 800
 CONFIRM_TOP_MARGIN = 500
 
+class EventControl:
+	def setShipLists(self, playerShips, opponentShips):
+		self.playerShips = playerShips
+		self.opponentShips = opponentShips
 
+	def __call__(self, sender, event):
+		if event == EVENT_DESTROYED:
+			if sender in self.playerShips:
+				self.playerShips.remove(sender)
+			if sender in self.opponentShips:
+				self.opponentShips.remove(sender)
 
 def main():
 
@@ -73,8 +86,10 @@ def main():
 	WEAPON_KINETIC = WeaponType("kinetic")
 	WEAPON_GUIDED = WeaponType("guided")
 
-	playerShips = [Ship(3, [Weapon(2, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(3,MOUNT_HEAVY, WEAPON_LASER)]), Ship(3, [Weapon(4,MOUNT_LIGHT, WEAPON_KINETIC), Weapon(5,MOUNT_MEDIUM, WEAPON_GUIDED)])]
-	opponentShips = [Ship(3, [Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)])]
+	event = EventControl()
+	playerShips = [Ship(3, [Weapon(2, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(3,MOUNT_HEAVY, WEAPON_LASER)], event), Ship(3, [Weapon(4,MOUNT_LIGHT, WEAPON_KINETIC), Weapon(5,MOUNT_MEDIUM, WEAPON_GUIDED)], event)]
+	opponentShips = [Ship(3, [Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)], event)]
+	event.setShipLists(playerShips, opponentShips)
 
 	# main loop
 	while True:
@@ -312,11 +327,12 @@ def nextTurn(playerShips, opponentShips):
 		ship.refresh()
 
 class Ship:
-	def __init__(self, hull, actions):
+	def __init__(self, hull, actions, event):
 		self.hull = hull                
 		self.damage = 0
 		self.actions = actions
 		self.state = STATE_READY
+		self.event = event
 		
 	def spend(self):
 		self.state = STATE_SPENT
@@ -340,8 +356,14 @@ class Ship:
 			if( result >= weapon.mount.accuracy()):
 				self.takeDamage( weapon.mount.damage() )
 
+		if self.damage >= self.hull:
+			self.destroy()
+
 	def takeDamage(self, amount):
 		self.damage += amount
+
+	def destroy(self):
+		self.event(self, EVENT_DESTROYED)
 
 class Weapon:
 	def __init__(self, rolls, mount, weaponType):
