@@ -1,5 +1,9 @@
-import pygame, sys, random, animations
+import pygame, sys, random, animations, dice
 from pygame.locals import *
+
+# ship states
+STATE_READY = 1
+STATE_SPENT = 2
 
 # colors
 BG_COLOR = (0, 0, 0)
@@ -14,9 +18,6 @@ OUTLINE_READY = (150, 255, 150)
 OUTLINE_HIGHLIGHT = (75,255,75)
 OUTLINE_SELECTED = (0, 255, 0)
 
-# ship states
-STATE_READY = 1
-STATE_SPENT = 2
 
 # screen size
 SCREEN_WIDTH = 1280
@@ -119,8 +120,11 @@ def main():
 			DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
 			if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
 				selectedShip.performAttack(selectedAction, selectedOpponent)
-				animation = animations.TestAnimation(getShipRectByShip(selectedShip, playerShips,True), getShipRectByShip(selectedOpponent, opponentShips, False), selectedAction.mount.damage(), selectedAction.rolls)
-				animation.redraw()
+				#animation = animations.TestAnimation(getShipRectByShip(selectedShip, playerShips,True), getShipRectByShip(selectedOpponent, opponentShips, False), selectedAction.mount.damage(), selectedAction.rolls)
+				results = []
+				for i in range(0, selectedAction.rolls):
+					results.append(random.randint(1,6))
+				animation = dice.DiceTray(fontObj, results, selectedAction.mount.accuracy())
 				selectedShip = None
 				selectedAction = None
 				selectedOpponent = None
