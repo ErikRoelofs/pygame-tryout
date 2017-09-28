@@ -5,14 +5,29 @@ import random, event
 STATE_READY = 1
 STATE_SPENT = 2
 
+# mounts
+MOUNT_LIGHT = "light"
+MOUNT_MEDIUM = "medium"
+MOUNT_HEAVY = "heavy"
+
 class Ship:
-    def __init__(self, name, hull, actions, event):
+    def __init__(self, name, hull, traits, actions, event):
         self._name = name
         self.hull = hull
         self.damage = 0
-        self.actions = actions
+        self.traits = traits
+        self.actions = []
+        for action in actions:
+            self.actions.append(
+                Weapon(
+                    action.rolls,
+                    Mount(action.mount.classification(), action.mount.accuracy(), action.mount.damage()),
+                    action.weaponType))
         self.state = STATE_READY
         self.event = event
+
+        for trait in self.traits:
+            trait.applyToOwner(self)
 
     def name(self):
         return self._name
@@ -32,6 +47,15 @@ class Ship:
         assert weapon in self.actions, "Cannot fire a weapon that is not on the ship!"
         self.spend()
         weapon.spend()
+
+        # apply my traits that modify my attacks
+        for trait in self.traits:
+            trait.applyToOutgoingAttack(self, weapon, target)
+
+        # apply target traits that modify incoming attacks
+        for trait in target.traits:
+            trait.applyToIncomingAttack(target, weapon, self)
+
         return Attack(self, weapon, target)
 
     def resolveAttackOnMe(self, attacker, weapon, results):
@@ -67,9 +91,13 @@ class Weapon:
 
 
 class Mount:
-    def __init__(self, theAccuracy, theDamage):
+    def __init__(self, classification, theAccuracy, theDamage):
+        self._classification = classification
         self._accuracy = theAccuracy
         self._damage = theDamage
+
+    def classification(self):
+        return self._classification
 
     def accuracy(self):
         return self._accuracy
@@ -77,6 +105,12 @@ class Mount:
     def damage(self):
         return self._damage
 
+    # note that lower accuracy is better
+    def increaseAccuracy(self, amount):
+        self._accuracy -= amount
+
+    def decreaseAccuracy(self, amount):
+        self._accuracy += amount
 
 class WeaponType:
     def __init__(self, theName):
@@ -100,3 +134,30 @@ class Attack:
         assert not self.applied, "This attack has already been applied!"
         self.applied = True
         self.target.resolveAttackOnMe(self.attacker, self.weapon, self.results)
+
+class Trait:
+    def applyToOwner(self, ship):
+        return False
+
+    def applyToTarget(self, ship):
+        return False
+
+    def applyToOutgoingAttack(self, me, weapon, target):
+        return False
+
+    def applyToIncomingAttack(self, attacker, weapon, me):
+        return False
+
+class Accurate(Trait):
+    def __init__(self, amount):
+        self.amount = amount
+
+    def applyToOutgoingAttack(self, me, weapon, target):
+        weapon.mount.increaseAccuracy(self.amount)
+
+class Evasive(Trait):
+    def __init__(self, amount):
+        self.amount = amount
+
+    def applyToIncomingAttack(self, attacker, weapon, me):
+        weapon.mount.decreaseAccuracy(self.amount)

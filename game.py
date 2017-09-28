@@ -1,6 +1,18 @@
 import pygame, sys, random, animations, dice, classes, shiplibrary, event
 from pygame.locals import *
 
+"""
+	- traits
+	- return fire
+	- destruction
+	- good animations
+	- separate this part of the game into a module
+	
+"""
+
+
+
+
 # colors
 BG_COLOR = (0, 0, 0)
 WHITE = (255,255,255)
@@ -38,13 +50,15 @@ CONFIRM_TOP_MARGIN = 500
 
 def main():
 
-	global DISPLAYSURF, fontObj, MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY, WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED
+	global DISPLAYSURF, fontObj, WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED
 	clock = pygame.time.Clock()
 
 	# game setup
-	MOUNT_LIGHT = classes.Mount(2, 1)
-	MOUNT_MEDIUM = classes.Mount(4, 2)
-	MOUNT_HEAVY = classes.Mount(5, 3)
+	mounts = (
+		classes.Mount(classes.MOUNT_LIGHT, 2, 1),
+		classes.Mount(classes.MOUNT_MEDIUM, 4, 2),
+		classes.Mount(classes.MOUNT_HEAVY, 5, 3)
+	)
 
 	WEAPON_LASER = classes.WeaponType("laser")
 	WEAPON_KINETIC = classes.WeaponType("kinetic")
@@ -69,7 +83,7 @@ def main():
 	fontObj = pygame.font.Font('freesansbold.ttf', 16)
 
 	eventControl = event.EventControl()
-	library = shiplibrary.Library((MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY),(WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED),eventControl)
+	library = shiplibrary.Library(mounts, (WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED),eventControl)
 
 	playerShips = [library.shipByName("Narf"),library.shipByName("Harf")]
 	opponentShips = [library.shipByName("Darf")]
@@ -216,12 +230,12 @@ def drawWeapon(fontObj, weapon, selected, highlighted):
 	return image
 
 def drawMount(mount):
-	assert mount in (MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY), "Pass a MOUNT to the drawMount function."
+	assert mount.classification() in (classes.MOUNT_LIGHT, classes.MOUNT_MEDIUM, classes.MOUNT_HEAVY), "Pass a MOUNT to the drawMount function."
 
 	image = pygame.Surface((40,40))
 	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
 	
-	text = "L" if mount == MOUNT_LIGHT else "M" if mount == MOUNT_MEDIUM else "H"
+	text = "L" if mount.classification() == classes.MOUNT_LIGHT else "M" if mount.classification() == classes.MOUNT_MEDIUM else "H"
 
 	textSurfaceObj = fontObj.render(text, True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
