@@ -1,12 +1,5 @@
-import pygame, sys, random, animations, dice
+import pygame, sys, random, animations, dice, classes, shiplibrary, event
 from pygame.locals import *
-
-# ship states
-STATE_READY = 1
-STATE_SPENT = 2
-
-# ship events
-EVENT_DESTROYED = 1;
 
 # colors
 BG_COLOR = (0, 0, 0)
@@ -42,22 +35,20 @@ CONFIRM_HEIGHT = 200
 CONFIRM_LEFT_MARGIN = 800
 CONFIRM_TOP_MARGIN = 500
 
-class EventControl:
-	def setShipLists(self, playerShips, opponentShips):
-		self.playerShips = playerShips
-		self.opponentShips = opponentShips
-
-	def __call__(self, sender, event):
-		if event == EVENT_DESTROYED:
-			if sender in self.playerShips:
-				self.playerShips.remove(sender)
-			if sender in self.opponentShips:
-				self.opponentShips.remove(sender)
 
 def main():
 
 	global DISPLAYSURF, fontObj, MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY, WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED
 	clock = pygame.time.Clock()
+
+	# game setup
+	MOUNT_LIGHT = classes.Mount(2, 1)
+	MOUNT_MEDIUM = classes.Mount(4, 2)
+	MOUNT_HEAVY = classes.Mount(5, 3)
+
+	WEAPON_LASER = classes.WeaponType("laser")
+	WEAPON_KINETIC = classes.WeaponType("kinetic")
+	WEAPON_GUIDED = classes.WeaponType("guided")
 
 	pygame.init()
 	DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -77,19 +68,12 @@ def main():
 	# make font
 	fontObj = pygame.font.Font('freesansbold.ttf', 16)
 
-	# game setup	
-	MOUNT_LIGHT = Mount(2,1)
-	MOUNT_MEDIUM = Mount(4,2)
-	MOUNT_HEAVY = Mount(5,3)
+	eventControl = event.EventControl()
+	library = shiplibrary.Library((MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY),(WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED),eventControl)
 
-	WEAPON_LASER = WeaponType("laser")
-	WEAPON_KINETIC = WeaponType("kinetic")
-	WEAPON_GUIDED = WeaponType("guided")
-
-	event = EventControl()
-	playerShips = [Ship(3, [Weapon(2, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(3,MOUNT_HEAVY, WEAPON_LASER)], event), Ship(3, [Weapon(4,MOUNT_LIGHT, WEAPON_KINETIC), Weapon(5,MOUNT_MEDIUM, WEAPON_GUIDED)], event)]
-	opponentShips = [Ship(3, [Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)], event)]
-	event.setShipLists(playerShips, opponentShips)
+	playerShips = [library.ship(0),library.ship(0)]
+	opponentShips = [classes.Ship(3, [classes.Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), classes.Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)], eventControl)]
+	eventControl.setShipLists(playerShips, opponentShips)
 
 	# main loop
 	while True:
@@ -101,14 +85,14 @@ def main():
 		trackCoords(fontObj, mousex, mousey, clock.get_fps())
 		drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
 
-		for event in pygame.event.get():
-			if event.type == QUIT:
+		for someEvent in pygame.event.get():
+			if someEvent.type == QUIT:
 				pygame.quit()
 				sys.exit()
-			if event.type == MOUSEMOTION:
-				mousex, mousey = event.pos
-			if event.type == MOUSEBUTTONUP:
-				mousex, mousey = event.pos
+			if someEvent.type == MOUSEMOTION:
+				mousex, mousey = someEvent.pos
+			if someEvent.type == MOUSEBUTTONUP:
+				mousex, mousey = someEvent.pos
 				mouseClicked = True
 
 		if not len(currentAnimations):
@@ -182,7 +166,7 @@ def drawShips(playerShips, opponentShips, selected, highlighted):
 def drawShip(ship, selected, highlighted):
 	image = pygame.Surface((SHIP_WIDTH,SHIP_HEIGHT))
 	
-	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if ship.state == STATE_SPENT else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
+	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if not ship.available() else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
 	
 	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
 	pygame.draw.circle(image, BLUE, (SHIP_WIDTH // 2, SHIP_HEIGHT // 2), SHIP_WIDTH // 4)
@@ -325,92 +309,6 @@ def nextTurn(playerShips, opponentShips):
 		ship.refresh()
 	for ship in opponentShips:
 		ship.refresh()
-
-class Ship:
-	def __init__(self, hull, actions, event):
-		self.hull = hull                
-		self.damage = 0
-		self.actions = actions
-		self.state = STATE_READY
-		self.event = event
-		
-	def spend(self):
-		self.state = STATE_SPENT
-		
-	def refresh(self):
-		self.state = STATE_READY
-		for action in self.actions:
-			action.refresh()
-
-	def available(self):
-		return self.state == STATE_READY
-
-	def performAttack(self, weapon, target):
-		assert weapon in self.actions, "Cannot fire a weapon that is not on the ship!"
-		self.spend()
-		weapon.spend()
-		return Attack(self, weapon, target)
-
-	def resolveAttackOnMe(self, attacker, weapon, results):
-		for result in results:
-			if( result >= weapon.mount.accuracy()):
-				self.takeDamage( weapon.mount.damage() )
-
-		if self.damage >= self.hull:
-			self.destroy()
-
-	def takeDamage(self, amount):
-		self.damage += amount
-
-	def destroy(self):
-		self.event(self, EVENT_DESTROYED)
-
-class Weapon:
-	def __init__(self, rolls, mount, weaponType):
-		self.rolls = rolls
-		self.mount = mount
-		self.weaponType = weaponType
-		self.spent = False
-
-	def spend(self):
-		self.spent = True
-
-	def refresh(self):
-		self.spent = False
-
-	def available(self):
-		return not self.spent
-
-class Mount:
-	def __init__(self, theAccuracy, theDamage):
-		self._accuracy = theAccuracy
-		self._damage = theDamage
-
-	def accuracy(self):
-		return self._accuracy
-	def damage(self):
-		return self._damage
-
-class WeaponType:
-	def __init__(self, theName):
-		self._name = theName
-	def name(self):
-		return self._name
-
-class Attack:
-	def __init__(self, attacker, weapon, target):
-		self.attacker = attacker
-		self.weapon = weapon
-		self.target = target
-		self.results = []
-		self.applied = False
-		for i in range(0, self.weapon.rolls):
-			self.results.append(random.randint(1, 6))
-
-	def apply(self):
-		assert not self.applied, "This attack has already been applied!"
-		self.applied = True
-		self.target.resolveAttackOnMe(self.attacker, self.weapon, self.results)
 
 if __name__ == '__main__':
     main()
