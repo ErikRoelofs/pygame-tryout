@@ -86,7 +86,7 @@ def main():
 	library = shiplibrary.Library(mounts, (WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED),eventControl)
 
 	playerShips = [library.shipByName("Narf"),library.shipByName("Harf")]
-	opponentShips = [library.shipByName("Darf")]
+	opponentShips = [library.shipByName("Narf"),library.shipByName("Darf")]
 	eventControl.setShipLists(playerShips, opponentShips)
 
 	# main loop
@@ -134,8 +134,8 @@ def main():
 				DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
 				if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
 					attack = selectedShip.performAttack(selectedAction, selectedOpponent)
-					currentAnimations.append(animations.TestAnimation(getShipRectByShip(selectedShip, playerShips,True), getShipRectByShip(selectedOpponent, opponentShips, False), selectedAction.mount.damage(), selectedAction.rolls))
-					currentAnimations.append(dice.DiceTray(fontObj, attack.results, selectedAction.mount.accuracy()))
+					currentAnimations.append(animations.TestAnimation(getShipRectByShip(attack.attacker(), playerShips,True), getShipRectByShip(attack.target(), opponentShips, False), attack.weapon().mount.damage(), attack.weapon().rolls))
+					currentAnimations.append(dice.DiceTray(fontObj, attack.results, attack.weapon().mount.accuracy()))
 					selectedShip = None
 					selectedAction = None
 					selectedOpponent = None

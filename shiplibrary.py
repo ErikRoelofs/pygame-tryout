@@ -1,4 +1,4 @@
-import classes
+import classes, copy
 
 class Library:
     def __init__(self, mounts, weaponTypes, event):
@@ -8,10 +8,10 @@ class Library:
         self.ships.append(classes.Ship("Darf", 3, (classes.Evasive(10), ), (classes.Weapon(3, mounts[0], weaponTypes[0]),), event))
 
     def ship(self, index):
-        return self.ships[index]
+        return copy.copy(self.ships[index])
 
     def shipByName(self, name):
         for ship in self.ships:
             if ship.name() == name:
-                return ship
+                return copy.copy(ship)
         raise IndexError("No ship registered by the name of: " + name)

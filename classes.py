@@ -1,4 +1,4 @@
-import random, event
+import random, event, copy
 
 
 # ship states
@@ -47,6 +47,8 @@ class Ship:
         assert weapon in self.actions, "Cannot fire a weapon that is not on the ship!"
         self.spend()
         weapon.spend()
+
+        weapon = copy.deepcopy(weapon)
 
         # apply my traits that modify my attacks
         for trait in self.traits:
@@ -122,18 +124,27 @@ class WeaponType:
 
 class Attack:
     def __init__(self, attacker, weapon, target):
-        self.attacker = attacker
-        self.weapon = weapon
-        self.target = target
+        self._attacker = attacker
+        self._weapon = weapon
+        self._target = target
         self.results = []
         self.applied = False
-        for i in range(0, self.weapon.rolls):
+        for i in range(0, self._weapon.rolls):
             self.results.append(random.randint(1, 6))
+
+    def attacker(self):
+        return self._attacker
+
+    def target(self):
+        return self._target
+
+    def weapon(self):
+        return self._weapon
 
     def apply(self):
         assert not self.applied, "This attack has already been applied!"
         self.applied = True
-        self.target.resolveAttackOnMe(self.attacker, self.weapon, self.results)
+        self._target.resolveAttackOnMe(self._attacker, self._weapon, self.results)
 
 class Trait:
     def applyToOwner(self, ship):
