@@ -10,6 +10,11 @@ MOUNT_LIGHT = "light"
 MOUNT_MEDIUM = "medium"
 MOUNT_HEAVY = "heavy"
 
+# weapon types
+WEAPON_LASER = 'laser'
+WEAPON_KINETIC = 'kinetic'
+WEAPON_GUIDED = 'guided'
+
 class Ship:
     def __init__(self, name, hull, traits, actions, event):
         self._name = name
@@ -114,6 +119,12 @@ class Mount:
     def decreaseAccuracy(self, amount):
         self._accuracy += amount
 
+    def increaseDamage(self, amount):
+        self._damage += amount
+
+    def decreaseDamage(self, amount):
+        self._damage = max( self._damage - amount, 0 )
+
 class WeaponType:
     def __init__(self, theName):
         self._name = theName
@@ -146,29 +157,3 @@ class Attack:
         self.applied = True
         self._target.resolveAttackOnMe(self._attacker, self._weapon, self.results)
 
-class Trait:
-    def applyToOwner(self, ship):
-        return False
-
-    def applyToTarget(self, ship):
-        return False
-
-    def applyToOutgoingAttack(self, me, weapon, target):
-        return False
-
-    def applyToIncomingAttack(self, attacker, weapon, me):
-        return False
-
-class Accurate(Trait):
-    def __init__(self, amount):
-        self.amount = amount
-
-    def applyToOutgoingAttack(self, me, weapon, target):
-        weapon.mount.increaseAccuracy(self.amount)
-
-class Evasive(Trait):
-    def __init__(self, amount):
-        self.amount = amount
-
-    def applyToIncomingAttack(self, attacker, weapon, me):
-        weapon.mount.decreaseAccuracy(self.amount)

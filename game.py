@@ -1,4 +1,4 @@
-import pygame, sys, random, animations, dice, classes, shiplibrary, event
+import pygame, sys, random, animations, dice, classes, shiplibrary, event, traits
 from pygame.locals import *
 
 """
@@ -9,9 +9,6 @@ from pygame.locals import *
 	- separate this part of the game into a module
 	
 """
-
-
-
 
 # colors
 BG_COLOR = (0, 0, 0)
@@ -47,10 +44,9 @@ CONFIRM_HEIGHT = 200
 CONFIRM_LEFT_MARGIN = 800
 CONFIRM_TOP_MARGIN = 500
 
-
 def main():
 
-	global DISPLAYSURF, fontObj, WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED
+	global DISPLAYSURF, fontObj
 	clock = pygame.time.Clock()
 
 	# game setup
@@ -60,9 +56,11 @@ def main():
 		classes.Mount(classes.MOUNT_HEAVY, 5, 3)
 	)
 
-	WEAPON_LASER = classes.WeaponType("laser")
-	WEAPON_KINETIC = classes.WeaponType("kinetic")
-	WEAPON_GUIDED = classes.WeaponType("guided")
+	weaponTypes = (
+		classes.WeaponType(classes.WEAPON_LASER),
+		classes.WeaponType(classes.WEAPON_KINETIC),
+		classes.WeaponType(classes.WEAPON_GUIDED)
+	)
 
 	pygame.init()
 	DISPLAYSURF = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
@@ -83,7 +81,7 @@ def main():
 	fontObj = pygame.font.Font('freesansbold.ttf', 16)
 
 	eventControl = event.EventControl()
-	library = shiplibrary.Library(mounts, (WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED),eventControl)
+	library = shiplibrary.Library(mounts, weaponTypes,eventControl)
 
 	playerShips = [library.shipByName("Narf"),library.shipByName("Harf")]
 	opponentShips = [library.shipByName("Narf"),library.shipByName("Darf")]
@@ -245,12 +243,12 @@ def drawMount(mount):
 	return image
 
 def drawWeaponType(weaponType):
-	assert weaponType in (WEAPON_KINETIC, WEAPON_LASER, WEAPON_GUIDED), "Pass a WEAPONTYPE to the drawWeaponType function."
+	assert weaponType.name() in (classes.WEAPON_KINETIC, classes.WEAPON_LASER, classes.WEAPON_GUIDED), "Pass a WEAPONTYPE to the drawWeaponType function."
 
 	image = pygame.Surface((40,40))
 	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
 	
-	text = "K" if weaponType == WEAPON_KINETIC else "L" if weaponType == WEAPON_LASER else "G"
+	text = "K" if weaponType.name() == classes.WEAPON_KINETIC else "L" if weaponType.name() == classes.WEAPON_LASER else "G"
 
 	textSurfaceObj = fontObj.render(text, True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
