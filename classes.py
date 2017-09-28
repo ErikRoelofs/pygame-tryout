@@ -6,12 +6,16 @@ STATE_READY = 1
 STATE_SPENT = 2
 
 class Ship:
-    def __init__(self, hull, actions, event):
+    def __init__(self, name, hull, actions, event):
+        self._name = name
         self.hull = hull
         self.damage = 0
         self.actions = actions
         self.state = STATE_READY
         self.event = event
+
+    def name(self):
+        return self._name
 
     def spend(self):
         self.state = STATE_SPENT

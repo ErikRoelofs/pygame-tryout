@@ -71,8 +71,8 @@ def main():
 	eventControl = event.EventControl()
 	library = shiplibrary.Library((MOUNT_LIGHT, MOUNT_MEDIUM, MOUNT_HEAVY),(WEAPON_LASER, WEAPON_KINETIC, WEAPON_GUIDED),eventControl)
 
-	playerShips = [library.ship(0),library.ship(0)]
-	opponentShips = [classes.Ship(3, [classes.Weapon(4, MOUNT_LIGHT, WEAPON_KINETIC), classes.Weapon(2,MOUNT_LIGHT, WEAPON_KINETIC)], eventControl)]
+	playerShips = [library.shipByName("Narf"),library.shipByName("Harf")]
+	opponentShips = [library.shipByName("Darf")]
 	eventControl.setShipLists(playerShips, opponentShips)
 
 	# main loop
@@ -170,6 +170,12 @@ def drawShip(ship, selected, highlighted):
 	
 	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
 	pygame.draw.circle(image, BLUE, (SHIP_WIDTH // 2, SHIP_HEIGHT // 2), SHIP_WIDTH // 4)
+
+	nameSurfaceObj = fontObj.render(str(ship.name()), True, WHITE)
+	nameRectObj = nameSurfaceObj.get_rect()
+	nameRectObj.left = 10
+	nameRectObj.top = SHIP_HEIGHT - 25
+	image.blit(nameSurfaceObj, nameRectObj)
 
 	textSurfaceObj = fontObj.render(str(ship.hull - ship.damage) + ' / ' + str(ship.hull), True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
