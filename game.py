@@ -243,12 +243,12 @@ def drawMount(mount):
 	return image
 
 def drawWeaponType(weaponType):
-	assert weaponType.name() in (classes.WEAPON_KINETIC, classes.WEAPON_LASER, classes.WEAPON_GUIDED), "Pass a WEAPONTYPE to the drawWeaponType function."
+	assert weaponType.isOneOf((classes.WEAPON_KINETIC, classes.WEAPON_LASER, classes.WEAPON_GUIDED)), "Pass a WEAPONTYPE to the drawWeaponType function."
 
 	image = pygame.Surface((40,40))
 	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
 	
-	text = "K" if weaponType.name() == classes.WEAPON_KINETIC else "L" if weaponType.name() == classes.WEAPON_LASER else "G"
+	text = "K" if weaponType.isType(classes.WEAPON_KINETIC) else "L" if weaponType.isType( classes.WEAPON_LASER ) else "G"
 
 	textSurfaceObj = fontObj.render(text, True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()

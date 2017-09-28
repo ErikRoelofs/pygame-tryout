@@ -132,6 +132,14 @@ class WeaponType:
     def name(self):
         return self._name
 
+    def isType(self, name):
+        return self._name == name
+
+    def isOneOf(self, types):
+        for type in types:
+            if type == self._name:
+                return True
+        return False
 
 class Attack:
     def __init__(self, attacker, weapon, target):
