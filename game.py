@@ -195,7 +195,18 @@ def drawShip(ship, selected, highlighted):
 	textRectObj.top = SHIP_HEIGHT - 25
 	image.blit(textSurfaceObj, textRectObj)
 
-	return image	
+	for key, trait in enumerate(ship.traits):
+		textSurfaceObj = drawTrait(trait)
+		textRectObj = textSurfaceObj.get_rect()
+		textRectObj.left = 10
+		textRectObj.top = SHIP_HEIGHT - 45 - (20 * key)
+		image.blit(textSurfaceObj, textRectObj)
+
+	return image
+
+def drawTrait(trait):
+	textSurfaceObj = fontObj.render(trait.writeTrait(), True, WHITE)
+	return textSurfaceObj
 
 def drawActionBar(fontObj, actions, selected, highlighted):
 	for index, action in enumerate(actions):
