@@ -1,10 +1,10 @@
-import pygame, sys, random, animations, dice, classes, shiplibrary, event, traits
+import animations, classes, dice, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane
 from pygame.locals import *
 
 """
-	- traits
-	- return fire
+	- write out attack result
 	- destruction
+	- return fire
 	- good animations
 	- separate this part of the game into a module
 	
@@ -92,10 +92,10 @@ def main():
 
 		mouseClicked = False
 		
-		DISPLAYSURF.fill(BG_COLOR)
+		#DISPLAYSURF.fill(BG_COLOR)
 
-		trackCoords(fontObj, mousex, mousey, clock.get_fps())
-		drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
+		#trackCoords(fontObj, mousex, mousey, clock.get_fps())
+		#drawShips(playerShips, opponentShips, (selectedShip, selectedOpponent), (friendlyHovered, opponentHovered))
 
 		for someEvent in pygame.event.get():
 			if someEvent.type == QUIT:
@@ -115,7 +115,7 @@ def main():
 
 			if selectedShip:
 				actionHovered = hoveredAction(mousex, mousey, selectedShip.actions)
-				drawActionBar(fontObj, selectedShip.actions, (selectedAction, ), (actionHovered, ))
+				#drawActionBar(fontObj, selectedShip.actions, (selectedAction, ), (actionHovered, ))
 				if mouseClicked and actionHovered:
 					selectedAction = actionHovered
 					selectedOpponent = None
@@ -128,8 +128,8 @@ def main():
 
 			if selectedShip and selectedOpponent and selectedAction:
 				confirmHovered = confirmButtonIsHovered(mousex,mousey)
-				image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
-				DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
+				#image = drawConfirmAction(fontObj, selectedShip, selectedAction, selectedOpponent, confirmHovered)
+				#DISPLAYSURF.blit(image, (CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN))
 				if mouseClicked and confirmHovered and selectedShip.available() and selectedAction.available():
 					attack = selectedShip.performAttack(selectedAction, selectedOpponent)
 					currentAnimations.append(animations.TestAnimation(getShipRectByShip(attack.attacker(), playerShips,True), getShipRectByShip(attack.target(), opponentShips, False), attack.weapon().mount.damage(), attack.weapon().rolls))
@@ -144,7 +144,7 @@ def main():
 				currentAnimations = []
 
 			for animation in currentAnimations:
-				DISPLAYSURF.blit(animation.surface(), animation.getPosition())
+				#DISPLAYSURF.blit(animation.surface(), animation.getPosition())
 				animation.advance(clock.get_time())
 				currentAnimations = [x for x in currentAnimations if not x.completed()]
 
@@ -155,6 +155,18 @@ def main():
 
 		if turnShouldEnd(playerShips, opponentShips):
 			nextTurn(playerShips, opponentShips)
+
+		main = ui.mainscreen.MainScreen((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+		playerLane = ui.shiplane.Shiplane(fontObj)
+		playerLane.addShips(playerShips)
+		main.addElement(ui.element.Element (playerLane, (LEFT_MARGIN, BOTTOM_ROW)))
+
+		opponentLane = ui.shiplane.Shiplane(fontObj)
+		opponentLane.addShips(opponentShips)
+		main.addElement(ui.element.Element (opponentLane, (LEFT_MARGIN, TOP_ROW)))
+
+		DISPLAYSURF.blit(main.draw(), (0,0))
 
 		pygame.display.update()
 		clock.tick(60)
@@ -280,17 +292,41 @@ def drawWeaponRolls(rolls):
 
 	return image
 
+def drawWeaponStats(weapon):
+	image = pygame.Surface((80, 40))
+	pygame.draw.rect(image, BLUE, (0, 0, 80, 40), 3)
+
+	textSurfaceObj = fontObj.render(str(weapon.mount.accuracy()), True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.center = (20, 20)
+	image.blit(textSurfaceObj, textRectObj)
+
+	textSurfaceObj = fontObj.render(str(weapon.mount.damage()), True, WHITE)
+	textRectObj = textSurfaceObj.get_rect()
+	textRectObj.center = (50, 20)
+	image.blit(textSurfaceObj, textRectObj)
+
+	return image
+
 def drawConfirmAction(fontObj, ship, weapon, target, highlighted):
 	image = pygame.Surface((CONFIRM_WIDTH,CONFIRM_HEIGHT))
 
 	outline_color = OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY if ship.available() and weapon.available() else OUTLINE_SPENT
 	pygame.draw.rect(image, outline_color, (0, 0, CONFIRM_WIDTH, CONFIRM_HEIGHT), 10)
 
+	attack = ship.performAttack(weapon, target)
+	rolls = drawWeaponRolls(attack.weapon().rolls)
+	image.blit(rolls, (50, 50))
+	weaponType = drawWeaponType(attack.weapon().weaponType)
+	image.blit(weaponType, (100, 50))
+	damage = drawWeaponStats(attack.weapon())
+	image.blit(damage, (100, 50))
+
 	textSurfaceObj = fontObj.render('FIRE!', True, WHITE)
 	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (CONFIRM_WIDTH / 2, CONFIRM_HEIGHT /2)
+	textRectObj.center = (CONFIRM_WIDTH / 2, CONFIRM_HEIGHT * 3/4)
 	image.blit(textSurfaceObj, textRectObj)
-	
+
 	return image
 
 def confirmButtonIsHovered(mousex, mousey):
