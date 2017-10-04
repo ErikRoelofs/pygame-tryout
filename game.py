@@ -178,48 +178,6 @@ def trackCoords(fontObj, mousex, mousey, fps):
 		textRectObj.bottom = SCREEN_HEIGHT		
 		DISPLAYSURF.blit(textSurfaceObj, textRectObj)
 
-def drawShips(playerShips, opponentShips, selected, highlighted):
-	for index, ship in enumerate(playerShips):
-		image = drawShip(ship, ship in selected, ship in highlighted)
-		DISPLAYSURF.blit(image, getShipRectByIndex(index, True))
-
-	for index, ship in enumerate(opponentShips):
-		image = drawShip(ship, ship in selected, ship in highlighted)
-		DISPLAYSURF.blit(image, getShipRectByIndex(index, False))
-		
-def drawShip(ship, selected, highlighted):
-	image = pygame.Surface((SHIP_WIDTH,SHIP_HEIGHT))
-	
-	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if not ship.available() else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
-	
-	pygame.draw.rect(image, outline_color, (0, 0, SHIP_WIDTH, SHIP_HEIGHT), 10)
-	pygame.draw.circle(image, BLUE, (SHIP_WIDTH // 2, SHIP_HEIGHT // 2), SHIP_WIDTH // 4)
-
-	nameSurfaceObj = fontObj.render(str(ship.name()), True, WHITE)
-	nameRectObj = nameSurfaceObj.get_rect()
-	nameRectObj.left = 10
-	nameRectObj.top = SHIP_HEIGHT - 25
-	image.blit(nameSurfaceObj, nameRectObj)
-
-	textSurfaceObj = fontObj.render(str(ship.hull - ship.damage) + ' / ' + str(ship.hull), True, WHITE)
-	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.left = SHIP_WIDTH - 40
-	textRectObj.top = SHIP_HEIGHT - 25
-	image.blit(textSurfaceObj, textRectObj)
-
-	for key, trait in enumerate(ship.traits):
-		textSurfaceObj = drawTrait(trait)
-		textRectObj = textSurfaceObj.get_rect()
-		textRectObj.left = 10
-		textRectObj.top = SHIP_HEIGHT - 45 - (20 * key)
-		image.blit(textSurfaceObj, textRectObj)
-
-	return image
-
-def drawTrait(trait):
-	textSurfaceObj = fontObj.render(trait.writeTrait(), True, WHITE)
-	return textSurfaceObj
-
 def drawActionBar(fontObj, actions, selected, highlighted):
 	for index, action in enumerate(actions):
 		image = drawWeapon(fontObj, action, action in selected, action in highlighted)
