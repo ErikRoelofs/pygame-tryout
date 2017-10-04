@@ -87,6 +87,14 @@ def main():
 	opponentShips = [library.shipByName("Narf"),library.shipByName("Darf")]
 	eventControl.setShipLists(playerShips, opponentShips)
 
+	main = ui.mainscreen.MainScreen((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+	playerLane = ui.shiplane.Shiplane(playerShips, fontObj)
+	main.addElement(ui.element.Element(playerLane, (LEFT_MARGIN, BOTTOM_ROW)))
+
+	opponentLane = ui.shiplane.Shiplane(opponentShips, fontObj)
+	main.addElement(ui.element.Element(opponentLane, (LEFT_MARGIN, TOP_ROW)))
+
 	# main loop
 	while True:
 
@@ -156,15 +164,7 @@ def main():
 		if turnShouldEnd(playerShips, opponentShips):
 			nextTurn(playerShips, opponentShips)
 
-		main = ui.mainscreen.MainScreen((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-		playerLane = ui.shiplane.Shiplane(fontObj)
-		playerLane.addShips(playerShips)
-		main.addElement(ui.element.Element (playerLane, (LEFT_MARGIN, BOTTOM_ROW)))
-
-		opponentLane = ui.shiplane.Shiplane(fontObj)
-		opponentLane.addShips(opponentShips)
-		main.addElement(ui.element.Element (opponentLane, (LEFT_MARGIN, TOP_ROW)))
+		main.setMousePosition(mousex, mousey)
 
 		DISPLAYSURF.blit(main.draw(), (0,0))
 

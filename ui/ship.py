@@ -20,14 +20,18 @@ class Ship(entity.Entity):
         self._surface = pygame.Surface((SHIP_WIDTH, SHIP_HEIGHT))
         self.ship = ship
         self.font = font
+        self._highlighted = False
 
     def draw(self):
-        return drawShip(self.font, self.ship, False, False)
+        return drawShip(self.font, self.ship, self._highlighted, False)
         #self._surface.blit(image, (0,0))
         #return self._surface
 
     def update(self, dt):
         return True
+
+    def highlight(self, value):
+        self._highlighted = value
 
 
 def drawShip(font, ship, selected, highlighted):
