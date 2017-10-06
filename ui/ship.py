@@ -16,14 +16,15 @@ BLUE = (0, 0, 128)
 
 
 class Ship(entity.Entity):
-    def __init__(self, ship, font):
+    def __init__(self, controller, ship, font):
         self._surface = pygame.Surface((SHIP_WIDTH, SHIP_HEIGHT))
-        self.ship = ship
+        self._ship = ship
         self.font = font
         self._highlighted = False
+        self._selected = False
 
     def draw(self):
-        return drawShip(self.font, self.ship, self._highlighted, False)
+        return drawShip(self.font, self._ship, self._highlighted, self._selected)
         #self._surface.blit(image, (0,0))
         #return self._surface
 
@@ -33,6 +34,11 @@ class Ship(entity.Entity):
     def highlight(self, value):
         self._highlighted = value
 
+    def selected(self, value):
+        self._selected = value
+
+    def ship(self):
+        return self._ship
 
 def drawShip(font, ship, selected, highlighted):
     image = pygame.Surface((SHIP_WIDTH, SHIP_HEIGHT))

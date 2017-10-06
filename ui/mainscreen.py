@@ -11,6 +11,9 @@ class MainScreen():
         self._mousePosition = None
         self._size = size
 
+    def setController(self, controller):
+        self._controller = controller
+
     def draw(self):
         self._surface.fill(BG_COLOR)
         for e in self.elements:
@@ -32,3 +35,7 @@ class MainScreen():
             self._mousePosition = None
         for child in self.elements:
             child.entity.setMousePosition(mousex - child.position[0], mousey - child.position[1])
+
+    def clicked(self, mousex, mousey):
+        for child in self.elements:
+            child.entity.clicked(mousex - child.position[0], mousey - child.position[1])

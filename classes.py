@@ -165,3 +165,30 @@ class Attack:
         self.applied = True
         self._target.resolveAttackOnMe(self._attacker, self._weapon, self.results)
 
+
+class Controller:
+    def __init__(self, screen, playerShips, opponentShips):
+        self._screen = screen;
+        screen.setController(self)
+        self.selectedPlayerShip = None
+        self.selectedOpponentShip = None
+        self.selectedAction = None
+        self.playerShips = playerShips
+        self.opponentShips = opponentShips
+        self.listeners = []
+
+    def shipHovered(self, shipUI):
+        for listener in self.listeners:
+            listener.event("hovered", shipUI)
+
+    def shipClicked(self, shipUI):
+        if shipUI.ship() in self.playerShips:
+            self.selectedPlayerShip = shipUI.ship()
+        if shipUI.ship() in self.opponentShips:
+            self.selectedOpponentShip = shipUI.ship()
+
+        for listener in self.listeners:
+            listener.event("selected", shipUI)
+
+    def addListener(self, listener, events):
+        self.listeners.append(listener)

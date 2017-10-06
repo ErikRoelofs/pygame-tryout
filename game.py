@@ -88,11 +88,12 @@ def main():
 	eventControl.setShipLists(playerShips, opponentShips)
 
 	main = ui.mainscreen.MainScreen((SCREEN_WIDTH, SCREEN_HEIGHT))
+	controller = classes.Controller(main, playerShips, opponentShips)
 
-	playerLane = ui.shiplane.Shiplane(playerShips, fontObj)
+	playerLane = ui.shiplane.Shiplane(controller, playerShips, fontObj)
 	main.addElement(ui.element.Element(playerLane, (LEFT_MARGIN, BOTTOM_ROW)))
 
-	opponentLane = ui.shiplane.Shiplane(opponentShips, fontObj)
+	opponentLane = ui.shiplane.Shiplane(controller, opponentShips, fontObj)
 	main.addElement(ui.element.Element(opponentLane, (LEFT_MARGIN, TOP_ROW)))
 
 	# main loop
@@ -165,8 +166,12 @@ def main():
 			nextTurn(playerShips, opponentShips)
 
 		main.setMousePosition(mousex, mousey)
+		if mouseClicked:
+			main.clicked(mousex, mousey)
 
 		DISPLAYSURF.blit(main.draw(), (0,0))
+
+		trackCoords(fontObj, mousex, mousey, clock.get_fps())
 
 		pygame.display.update()
 		clock.tick(60)
@@ -175,7 +180,7 @@ def trackCoords(fontObj, mousex, mousey, fps):
 		textSurfaceObj = fontObj.render(str(mousex) + ', ' + str(mousey) + ' @' + str(fps) + 'fps', True, GREEN, BLUE)
 		textRectObj = textSurfaceObj.get_rect()
 		textRectObj.right = SCREEN_WIDTH
-		textRectObj.bottom = SCREEN_HEIGHT		
+		textRectObj.bottom = SCREEN_HEIGHT - 50
 		DISPLAYSURF.blit(textSurfaceObj, textRectObj)
 
 def drawActionBar(fontObj, actions, selected, highlighted):
