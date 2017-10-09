@@ -1,4 +1,4 @@
-import animations, classes, dice, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane
+import animations, classes, dice, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane, ui.container
 from pygame.locals import *
 
 """
@@ -96,6 +96,8 @@ def main():
 	opponentLane = ui.shiplane.Shiplane(controller, opponentShips, fontObj)
 	main.addElement(ui.element.Element(opponentLane, (LEFT_MARGIN, TOP_ROW)))
 
+	main.addElement(ui.element.Element(ui.container.Container(fontObj, controller),(LEFT_MARGIN, ACTION_ROW)))
+
 	# main loop
 	while True:
 
@@ -191,69 +193,6 @@ def drawActionBar(fontObj, actions, selected, highlighted):
 def getActionSlot(index):
 	return pygame.Rect(LEFT_MARGIN + (ACTION_WIDTH + ACTION_GAP) * index, ACTION_ROW, ACTION_WIDTH, ACTION_HEIGHT)
 
-def drawWeapon(fontObj, weapon, selected, highlighted):
-	image = pygame.Surface((ACTION_WIDTH,ACTION_HEIGHT))
-	outline_color = OUTLINE_SELECTED if selected else OUTLINE_SPENT if not weapon.available() else OUTLINE_HIGHLIGHT if highlighted else OUTLINE_READY
-	pygame.draw.rect(image, outline_color, (0, 0, ACTION_WIDTH, ACTION_HEIGHT), 10)
-
-	rollsImg = drawWeaponRolls(weapon.rolls)
-	rollsRect = rollsImg.get_rect()
-	rollsRect.center = (ACTION_WIDTH / 4, ACTION_HEIGHT / 2 )
-	image.blit(rollsImg, rollsRect)
-
-	mountImg = drawMount(weapon.mount)
-	mountRect = mountImg.get_rect()
-	mountRect.center = (ACTION_WIDTH / 2, ACTION_HEIGHT / 2)
-	image.blit(mountImg, mountRect)
-
-	weaponTypeImg = drawWeaponType(weapon.weaponType)
-	weaponTypeRect = weaponTypeImg.get_rect()
-	weaponTypeRect.center = (ACTION_WIDTH / 4 * 3, ACTION_HEIGHT / 2)
-	image.blit(weaponTypeImg, weaponTypeRect)
-
-	return image
-
-def drawMount(mount):
-	assert mount.classification() in (classes.MOUNT_LIGHT, classes.MOUNT_MEDIUM, classes.MOUNT_HEAVY), "Pass a MOUNT to the drawMount function."
-
-	image = pygame.Surface((40,40))
-	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
-	
-	text = "L" if mount.classification() == classes.MOUNT_LIGHT else "M" if mount.classification() == classes.MOUNT_MEDIUM else "H"
-
-	textSurfaceObj = fontObj.render(text, True, WHITE)
-	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (20, 20)
-	image.blit(textSurfaceObj, textRectObj)
-	
-	return image
-
-def drawWeaponType(weaponType):
-	assert weaponType.isOneOf((classes.WEAPON_KINETIC, classes.WEAPON_LASER, classes.WEAPON_GUIDED)), "Pass a WEAPONTYPE to the drawWeaponType function."
-
-	image = pygame.Surface((40,40))
-	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
-	
-	text = "K" if weaponType.isType(classes.WEAPON_KINETIC) else "L" if weaponType.isType( classes.WEAPON_LASER ) else "G"
-
-	textSurfaceObj = fontObj.render(text, True, WHITE)
-	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (20, 20)
-	image.blit(textSurfaceObj, textRectObj)
-	
-	return image
-
-def drawWeaponRolls(rolls):
-
-	image = pygame.Surface((40, 40))
-	pygame.draw.rect(image, BLUE, (0, 0, 40, 40), 3)
-
-	textSurfaceObj = fontObj.render(str(rolls), True, WHITE)
-	textRectObj = textSurfaceObj.get_rect()
-	textRectObj.center = (20, 20)
-	image.blit(textSurfaceObj, textRectObj)
-
-	return image
 
 def drawWeaponStats(weapon):
 	image = pygame.Surface((80, 40))

@@ -10,3 +10,9 @@ class Entity():
 
     def update(self, dt):
         return True
+
+    def setMousePosition(self, mousex, mousey):
+        raise NotImplementedError("Should implement setMousePosition (it takes int, int)")
+
+    def clicked(self, mousex, mousey):
+        raise NotImplementedError("Should implement clicked (it takes int, int)")

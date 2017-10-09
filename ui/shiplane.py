@@ -63,7 +63,7 @@ class Shiplane(entity.Entity):
             ship.highlight(False)
 
     def event(self, name, target):
-        if name == "selected":
+        if name == "player-selected" or name == "opponent-selected":
             if not target in self.shipUIs:
                 return
             for ship in self.shipUIs:

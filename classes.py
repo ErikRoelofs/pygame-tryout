@@ -184,11 +184,14 @@ class Controller:
     def shipClicked(self, shipUI):
         if shipUI.ship() in self.playerShips:
             self.selectedPlayerShip = shipUI.ship()
+            self._broadcast("player-selected", shipUI)
         if shipUI.ship() in self.opponentShips:
             self.selectedOpponentShip = shipUI.ship()
-
-        for listener in self.listeners:
-            listener.event("selected", shipUI)
+            self._broadcast("opponent-selected", shipUI)
 
     def addListener(self, listener, events):
         self.listeners.append(listener)
+
+    def _broadcast(self, name, data):
+        for listener in self.listeners:
+            listener.event(name, data)
