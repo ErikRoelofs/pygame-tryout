@@ -189,6 +189,10 @@ class Controller:
             self.selectedOpponentShip = shipUI.ship()
             self._broadcast("opponent-selected", shipUI)
 
+    def actionClicked(self, actionUI):
+        self.selectedAction = actionUI.action()
+        self._broadcast("action-selected", actionUI)
+
     def addListener(self, listener, events):
         self.listeners.append(listener)
 

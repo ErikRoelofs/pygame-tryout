@@ -24,7 +24,7 @@ class Ship(entity.Entity):
         self._selected = False
 
     def draw(self):
-        return drawShip(self.font, self._ship, self._highlighted, self._selected)
+        return drawShip(self.font, self._ship, self._selected, self._highlighted)
         #self._surface.blit(image, (0,0))
         #return self._surface
 

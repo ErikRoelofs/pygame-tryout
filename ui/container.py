@@ -1,10 +1,11 @@
+from empty import Empty
 from entity import Entity
 from actionbar import ActionBar
 
 class Container(Entity):
 
     def __init__(self, fontObj, controller):
-        self._content = Entity()
+        self._content = Empty()
         self._controller = controller
         controller.addListener(self, [])
         self._fontObj = fontObj
@@ -19,10 +20,10 @@ class Container(Entity):
         return self._content.update(dt)
 
     def setMousePosition(self, mousex, mousey):
-        True
+        self._content.setMousePosition(mousex, mousey)
 
     def clicked(self, mousex, mousey):
-        True
+        self._content.clicked(mousex, mousey)
 
     def event(self, name, target):
         if name == "player-selected":

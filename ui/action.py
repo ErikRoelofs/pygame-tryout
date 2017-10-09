@@ -19,13 +19,24 @@ class Action:
         self._fontObj = fontObj
         self._size = (ACTION_WIDTH,ACTION_HEIGHT)
         self._surface = pygame.Surface(self._size)
-        self.action = action
+        self._action = action
+        self._highlighted = False
+        self._selected = False
 
     def draw(self):
-        return drawWeapon(self._fontObj,self.action,False, False)
+        return drawWeapon(self._fontObj,self._action,self._selected, self._highlighted)
 
     def update(self, dt):
         return True
+
+    def highlight(self, value):
+        self._highlighted = value
+
+    def selected(self, value):
+        self._selected = value
+
+    def action(self):
+        return self._action
 
 def drawWeapon(fontObj, weapon, selected, highlighted):
     image = pygame.Surface((ACTION_WIDTH, ACTION_HEIGHT))
