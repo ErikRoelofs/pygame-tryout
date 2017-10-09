@@ -1,5 +1,6 @@
 import animations, classes, dice, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane, ui.container
 from pygame.locals import *
+from ui.actionbar import ActionBar
 
 """
 	- write out attack result
@@ -96,7 +97,8 @@ def main():
 	opponentLane = ui.shiplane.Shiplane(controller, opponentShips, fontObj)
 	main.addElement(ui.element.Element(opponentLane, (LEFT_MARGIN, TOP_ROW)))
 
-	main.addElement(ui.element.Element(ui.container.Container(fontObj, controller),(LEFT_MARGIN, ACTION_ROW)))
+	main.addElement(ui.element.Element(ui.container.ActionBarContainer(fontObj, controller),(LEFT_MARGIN, ACTION_ROW)))
+	main.addElement(ui.element.Element(ui.container.ConfirmActionContainer(fontObj, controller),(CONFIRM_LEFT_MARGIN, CONFIRM_TOP_MARGIN)))
 
 	# main loop
 	while True:

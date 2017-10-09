@@ -188,10 +188,12 @@ class Controller:
         if shipUI.ship() in self.opponentShips:
             self.selectedOpponentShip = shipUI.ship()
             self._broadcast("opponent-selected", shipUI)
+        self._checkAllSet()
 
     def actionClicked(self, actionUI):
         self.selectedAction = actionUI.action()
         self._broadcast("action-selected", actionUI)
+        self._checkAllSet()
 
     def addListener(self, listener, events):
         self.listeners.append(listener)
@@ -199,3 +201,8 @@ class Controller:
     def _broadcast(self, name, data):
         for listener in self.listeners:
             listener.event(name, data)
+
+    def _checkAllSet(self):
+        if self.selectedOpponentShip and self.selectedPlayerShip and self.selectedAction:
+            data = Attack(self.selectedPlayerShip, self.selectedAction, self.selectedOpponentShip)
+            self._broadcast("all-selected", data)

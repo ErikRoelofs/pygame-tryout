@@ -1,6 +1,7 @@
 from empty import Empty
 from entity import Entity
 from actionbar import ActionBar
+from confirm import Confirm
 
 class Container(Entity):
 
@@ -26,5 +27,14 @@ class Container(Entity):
         self._content.clicked(mousex, mousey)
 
     def event(self, name, target):
+        raise NotImplementedError("Child must override event function.")
+
+class ActionBarContainer(Container):
+    def event(self, name, target):
         if name == "player-selected":
             self.setContent(ActionBar(self._controller, target.ship().actions, self._fontObj))
+
+class ConfirmActionContainer(Container):
+    def event(self, name, data):
+        if name == "all-selected":
+            self.setContent(Confirm(self._controller, self._fontObj, data.attacker(), data.weapon(), data.target()))
