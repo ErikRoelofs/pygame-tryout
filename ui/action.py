@@ -1,18 +1,8 @@
 import pygame, classes
+from colors import *
 
 ACTION_WIDTH = 150
 ACTION_HEIGHT = 150
-
-OUTLINE_SPENT = (100, 100, 100)
-OUTLINE_SLOW = (150, 150, 150)
-OUTLINE_READY = (150, 255, 150)
-OUTLINE_HIGHLIGHT = (75,255,75)
-OUTLINE_SELECTED = (0, 255, 0)
-
-BG_COLOR = (0, 0, 0)
-WHITE = (255,255,255)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 128)
 
 class Action:
     def __init__(self, controller, action, fontObj):

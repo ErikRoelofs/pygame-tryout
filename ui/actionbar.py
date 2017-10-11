@@ -1,6 +1,6 @@
 from action import Action
 import action
-import pygame, classes
+import pygame
 
 ACTION_GAP = 25
 

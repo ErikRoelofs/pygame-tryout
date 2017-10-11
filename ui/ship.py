@@ -1,18 +1,9 @@
 import entity, pygame, classes
+from colors import *
 # classes needs to go
 
 SHIP_WIDTH = 200
 SHIP_HEIGHT = 200
-
-# ship outline colors - do not belong here
-OUTLINE_SPENT = (100, 100, 100)
-OUTLINE_SLOW = (150, 150, 150)
-OUTLINE_READY = (150, 255, 150)
-OUTLINE_HIGHLIGHT = (75,255,75)
-OUTLINE_SELECTED = (0, 255, 0)
-WHITE = (255,255,255)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 128)
 
 
 class Ship(entity.Entity):
@@ -25,8 +16,6 @@ class Ship(entity.Entity):
 
     def draw(self):
         return drawShip(self.font, self._ship, self._selected, self._highlighted)
-        #self._surface.blit(image, (0,0))
-        #return self._surface
 
     def update(self, dt):
         return True

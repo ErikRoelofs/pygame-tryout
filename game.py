@@ -1,6 +1,7 @@
 import animations, classes, dice, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane, ui.container
 from pygame.locals import *
 from ui.actionbar import ActionBar
+from ui.colors import *
 
 """
 	- write out attack result
@@ -10,20 +11,6 @@ from ui.actionbar import ActionBar
 	- separate this part of the game into a module
 	
 """
-
-# colors
-BG_COLOR = (0, 0, 0)
-WHITE = (255,255,255)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 128)
-
-# ship outline colors
-OUTLINE_SPENT = (100, 100, 100)
-OUTLINE_SLOW = (150, 150, 150)
-OUTLINE_READY = (150, 255, 150)
-OUTLINE_HIGHLIGHT = (75,255,75)
-OUTLINE_SELECTED = (0, 255, 0)
-
 
 # screen size
 SCREEN_WIDTH = 1280
@@ -89,7 +76,7 @@ def main():
 	eventControl.setShipLists(playerShips, opponentShips)
 
 	main = ui.mainscreen.MainScreen((SCREEN_WIDTH, SCREEN_HEIGHT))
-	controller = classes.Controller(main, playerShips, opponentShips)
+	controller = classes.Controller(main, playerShips, opponentShips, eventControl)
 
 	playerLane = ui.shiplane.Shiplane(controller, playerShips, fontObj)
 	main.addElement(ui.element.Element(playerLane, (LEFT_MARGIN, BOTTOM_ROW)))

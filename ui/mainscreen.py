@@ -1,7 +1,6 @@
 import pygame
 import element as Element
-
-BG_COLOR = (0, 0, 0)
+from colors import *
 
 class MainScreen():
 

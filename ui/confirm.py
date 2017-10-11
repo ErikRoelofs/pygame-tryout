@@ -1,23 +1,12 @@
 import pygame
 import classes
 from entity import Entity
-
-BG_COLOR = (0, 0, 0)
-WHITE = (255,255,255)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 128)
+from colors import *
 
 CONFIRM_WIDTH = 200
 CONFIRM_HEIGHT = 200
 CONFIRM_LEFT_MARGIN = 800
 CONFIRM_TOP_MARGIN = 500
-
-OUTLINE_SPENT = (100, 100, 100)
-OUTLINE_SLOW = (150, 150, 150)
-OUTLINE_READY = (150, 255, 150)
-OUTLINE_HIGHLIGHT = (75,255,75)
-OUTLINE_SELECTED = (0, 255, 0)
-
 
 class Confirm(Entity):
     def __init__(self, controller, fontObj, ship, weapon, target):
@@ -36,7 +25,8 @@ class Confirm(Entity):
         return drawConfirmAction(self._fontObj, self.ship, self.weapon, self.target, highlighted)
 
     def clicked(self, mousex, mousey):
-        True
+        if 0 <= mousex <= self._size[0] and 0 <= mousey <= self._size[1]:
+            self._controller.actionConfirmed()
 
     def setMousePosition(self, mousex, mousey):
         if 0 <= mousex <= self._size[0] and 0 <= mousey <= self._size[1]:

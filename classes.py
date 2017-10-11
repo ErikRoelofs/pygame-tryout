@@ -167,8 +167,8 @@ class Attack:
 
 
 class Controller:
-    def __init__(self, screen, playerShips, opponentShips):
-        self._screen = screen;
+    def __init__(self, screen, playerShips, opponentShips, event):
+        self._screen = screen
         screen.setController(self)
         self.selectedPlayerShip = None
         self.selectedOpponentShip = None
@@ -176,6 +176,8 @@ class Controller:
         self.playerShips = playerShips
         self.opponentShips = opponentShips
         self.listeners = []
+        self._event = event
+        event.addListener(self, [])
 
     def shipHovered(self, shipUI):
         for listener in self.listeners:
@@ -206,3 +208,19 @@ class Controller:
         if self.selectedOpponentShip and self.selectedPlayerShip and self.selectedAction:
             data = Attack(self.selectedPlayerShip, self.selectedAction, self.selectedOpponentShip)
             self._broadcast("all-selected", data)
+
+    def actionConfirmed(self):
+        attack = self.selectedPlayerShip.performAttack(self.selectedAction, self.selectedOpponentShip)
+        attack.apply()
+        self.selectedPlayerShip = None
+        self.selectedOpponentShip = None
+        self.selectedAction = None
+        self._broadcast("all-unselected", None)
+
+    def event(self, name, data):
+        if name == 1:
+            self._broadcast("destroyed", data)
+            if data in self.playerShips:
+                self.playerShips.remove(data)
+            if data in self.opponentShips:
+                self.opponentShips.remove(data)

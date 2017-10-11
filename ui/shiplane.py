@@ -1,4 +1,5 @@
 import entity, pygame, ship
+from colors import *
 
 SHIP_GAP = 25
 
@@ -18,6 +19,7 @@ class Shiplane(entity.Entity):
         self._mouseClicked = False
 
     def draw(self):
+        self._surface.fill(BG_COLOR)
         self.unhighlightAll()
         if self._mousePosition:
             theShip = self.findUIAtPosition(self._mousePosition[0], self._mousePosition[1])
@@ -63,6 +65,10 @@ class Shiplane(entity.Entity):
             ship.highlight(False)
 
     def event(self, name, target):
+        if name == "all-unselected":
+            for ship in self.shipUIs:
+                ship.selected(False)
+
         if name == "player-selected" or name == "opponent-selected":
             if not target in self.shipUIs:
                 return
@@ -77,3 +83,8 @@ class Shiplane(entity.Entity):
                     ship.hovered(True)
                 else:
                     ship.hovered(False)
+
+        if name == "destroyed":
+            for ui in self.shipUIs:
+                if ui.ship() == target:
+                    self.shipUIs.remove(ui)

@@ -33,8 +33,12 @@ class ActionBarContainer(Container):
     def event(self, name, target):
         if name == "player-selected":
             self.setContent(ActionBar(self._controller, target.ship().actions, self._fontObj))
+        if name == "all-unselected":
+            self.setContent(Empty())
 
 class ConfirmActionContainer(Container):
     def event(self, name, data):
         if name == "all-selected":
             self.setContent(Confirm(self._controller, self._fontObj, data.attacker(), data.weapon(), data.target()))
+        if name == "all-unselected":
+            self.setContent(Empty())
