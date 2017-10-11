@@ -169,6 +169,7 @@ class Attack:
 class BaseController:
 
     TURN_END = 1
+    ANIMATION_DONE = 2
 
     def __init__(self, screen, firstPlayerTurnStrategy, secondPlayerTurnStrategy, event):
         self._screen = screen
@@ -178,6 +179,7 @@ class BaseController:
         self.player1 = firstPlayerTurnStrategy
         self.player2 = secondPlayerTurnStrategy
         self.strategy = firstPlayerTurnStrategy
+        self.currentTurn = self.player1
         event.addListener(self, [])
         self.player1.setGame(self)
         self.player2.setGame(self)
@@ -202,10 +204,18 @@ class BaseController:
 
     def strategyEvent(self, type):
         if type == self.TURN_END:
-            if self.strategy == self.player1:
+            if self.currentTurn == self.player1:
                 self.strategy = self.player2
+                self.currentTurn = self.player2
             else:
                 self.strategy = self.player1
+                self.currentTurn = self.player1
+
+        if type == self.ANIMATION_DONE:
+            if self.currentTurn == self.player1:
+                self.strategy = self.player1
+            else:
+                self.strategy = self.player2
 
 class PlayerTurnStrategy:
     def __init__(self, playerShips, opponentShips):
@@ -261,3 +271,23 @@ class PlayerTurnStrategy:
                 self.playerShips.remove(data)
             if data in self.opponentShips:
                 self.opponentShips.remove(data)
+
+class AnimationStrategy:
+
+    def setGame(self, game):
+        self.game = game
+
+    def shipHovered(self, shipUI):
+        True
+
+    def shipClicked(self, shipUI):
+        self.game.strategyEvent(BaseController.ANIMATION_DONE)
+
+    def actionClicked(self, actionUI):
+        self.game.strategyEvent(BaseController.ANIMATION_DONE)
+
+    def actionConfirmed(self):
+        self.game.strategyEvent(BaseController.ANIMATION_DONE)
+
+    def event(self, name, data):
+        True
