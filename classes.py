@@ -166,21 +166,60 @@ class Attack:
         self._target.resolveAttackOnMe(self._attacker, self._weapon, self.results)
 
 
-class Controller:
-    def __init__(self, screen, playerShips, opponentShips, event):
+class BaseController:
+
+    TURN_END = 1
+
+    def __init__(self, screen, firstPlayerTurnStrategy, secondPlayerTurnStrategy, event):
         self._screen = screen
         screen.setController(self)
+        self.listeners = []
+        self._event = event
+        self.player1 = firstPlayerTurnStrategy
+        self.player2 = secondPlayerTurnStrategy
+        self.strategy = firstPlayerTurnStrategy
+        event.addListener(self, [])
+        self.player1.setGame(self)
+        self.player2.setGame(self)
+
+    def shipHovered(self, shipUI):
+        self.strategy.shipHovered(shipUI)
+
+    def shipClicked(self, shipUI):
+        self.strategy.shipClicked(shipUI)
+
+    def actionClicked(self, actionUI):
+        self.strategy.actionClicked(actionUI)
+
+    def addListener(self, listener, events):
+        self.listeners.append(listener)
+
+    def actionConfirmed(self):
+        self.strategy.actionConfirmed()
+
+    def event(self, name, data):
+        self.strategy.event(name, data)
+
+    def strategyEvent(self, type):
+        if type == self.TURN_END:
+            if self.strategy == self.player1:
+                self.strategy = self.player2
+            else:
+                self.strategy = self.player1
+
+class PlayerTurnStrategy:
+    def __init__(self, playerShips, opponentShips):
         self.selectedPlayerShip = None
         self.selectedOpponentShip = None
         self.selectedAction = None
         self.playerShips = playerShips
         self.opponentShips = opponentShips
-        self.listeners = []
-        self._event = event
-        event.addListener(self, [])
+
+    def setGame(self, game):
+        self.game = game
 
     def shipHovered(self, shipUI):
-        for listener in self.listeners:
+        for listener in self.game.listeners:
             listener.event("hovered", shipUI)
 
     def shipClicked(self, shipUI):
@@ -197,11 +236,8 @@ class Controller:
         self._broadcast("action-selected", actionUI)
         self._checkAllSet()
 
-    def addListener(self, listener, events):
-        self.listeners.append(listener)
-
     def _broadcast(self, name, data):
-        for listener in self.listeners:
+        for listener in self.game.listeners:
             listener.event(name, data)
 
     def _checkAllSet(self):
@@ -216,6 +252,7 @@ class Controller:
         self.selectedOpponentShip = None
         self.selectedAction = None
         self._broadcast("all-unselected", None)
+        self.game.strategyEvent(BaseController.TURN_END)
 
     def event(self, name, data):
         if name == 1:

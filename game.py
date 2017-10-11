@@ -76,7 +76,7 @@ def main():
 	eventControl.setShipLists(playerShips, opponentShips)
 
 	main = ui.mainscreen.MainScreen((SCREEN_WIDTH, SCREEN_HEIGHT))
-	controller = classes.Controller(main, playerShips, opponentShips, eventControl)
+	controller = classes.BaseController(main, classes.PlayerTurnStrategy(playerShips, opponentShips), classes.PlayerTurnStrategy(opponentShips, playerShips), eventControl)
 
 	playerLane = ui.shiplane.Shiplane(controller, playerShips, fontObj)
 	main.addElement(ui.element.Element(playerLane, (LEFT_MARGIN, BOTTOM_ROW)))
