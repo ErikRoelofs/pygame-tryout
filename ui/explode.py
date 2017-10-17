@@ -1,4 +1,4 @@
-import pygame, ship
+import pygame, ship, random
 
 class Explode:
     def __init__(self):
@@ -10,7 +10,10 @@ class Explode:
     def update(self, dt):
         for blast in self.blasts:
             blast.update(dt)
-        # clean blasts
+            if(blast.shouldClean()):
+                self.blasts.remove(blast)
+        if random.randint(1,60) < dt:
+            self._addExplosion()
 
     def draw(self):
         self._surface.fill((0, 0, 0, 0))
@@ -19,7 +22,7 @@ class Explode:
         return self._surface
 
     def _addExplosion(self):
-        self.blasts.append()
+        self.blasts.append(Explosion(random.randint(30, 170), random.randint(30, 170),  random.randint(1,10), random.randint(8, 40), random.randint(1,20)))
 
 class Explosion:
     def __init__(self, x, y, initialSize, maxSize, growSpeed):
@@ -30,9 +33,20 @@ class Explosion:
         self.growSpeed = growSpeed
 
     def draw(self, surface):
-        pygame.draw.circle(surface, (255, 0, 0), (self.x, self.y), self.size)
+        pygame.draw.circle(surface, self._getColor(), (self.x, self.y), self.size)
 
     def update(self, dt):
-        self.size += dt * self.growSpeed
+        self.size += dt / 7
         if self.size > self.maxSize:
             self.size = self.maxSize
+
+    def shouldClean(self):
+        return self.size >= self.maxSize
+
+    def _getColor(self):
+        alpha = ((self.maxSize - self.size) / float(self.maxSize)) * 255
+        if alpha < 0:
+            alpha = 0
+        if alpha > 255:
+            alpha = 255
+        return (255, 0, 0, alpha)
