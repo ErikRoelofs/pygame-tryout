@@ -1,5 +1,6 @@
 import pygame
 import element as Element
+import shiplane
 from colors import *
 
 class MainScreen():
@@ -39,3 +40,9 @@ class MainScreen():
         for child in self.elements:
             child.entity.clicked(mousex - child.position[0], mousey - child.position[1])
         self._controller.nextFrame()
+
+    def findShipUI(self, ship):
+        for element in self.elements:
+            if isinstance(element.entity, shiplane.Shiplane):
+                if element.entity.findUIForShip(ship):
+                    return element.entity.findUIForShip(ship)

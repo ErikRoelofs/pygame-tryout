@@ -28,7 +28,8 @@ class Shiplane(entity.Entity):
         return self._surface
 
     def update(self, dt):
-        return True
+        for ui in self.shipUIs:
+            ui.update(dt)
 
     def setMousePosition(self, mousex, mousey):
         self.unhighlightAll()
@@ -86,3 +87,8 @@ class Shiplane(entity.Entity):
             for ui in self.shipUIs:
                 if ui.ship() == target:
                     self.shipUIs.remove(ui)
+
+    def findUIForShip(self, ship):
+        for ui in self.shipUIs:
+            if ui.ship() == ship:
+                return ui

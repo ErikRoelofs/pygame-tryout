@@ -24,10 +24,14 @@ class Ship(entity.Entity):
     def redraw(self):
         image = drawShip(self.font, self._ship, self._selected, self._highlighted)
         self._surface.blit(image, (0,0))
+        if self._animation:
+            self._surface.blit(self._animation.draw(), (0,0))
         self._modified = False
 
     def update(self, dt):
-        return True
+        if self._animation:
+            self._animation.update(dt)
+            self._modified = True
 
     def highlight(self, value):
         if self._highlighted != value:
@@ -41,6 +45,12 @@ class Ship(entity.Entity):
 
     def ship(self):
         return self._ship
+
+    def animate(self, animation):
+        self._animation = animation
+
+    def stopAnimation(self):
+        self._animation = None
 
 def drawShip(font, ship, selected, highlighted):
     image = pygame.Surface((SHIP_WIDTH, SHIP_HEIGHT))

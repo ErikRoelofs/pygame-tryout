@@ -1,4 +1,5 @@
 import random, event, copy
+from ui.explode import Explode
 
 
 # ship states
@@ -202,8 +203,7 @@ class BaseController:
 
     def nextFrame(self):
         if self._queuedEvent and self._queuedEvent[0] == 1:
-            self.strategy = AnimationStrategy()
-            self.strategy.setGame(self)
+            self.strategy = AnimationStrategy(self, self._screen, self._queuedEvent[0], self._queuedEvent[1])
 
     def event(self, name, data):
         if name == 1:
@@ -292,20 +292,29 @@ class PlayerTurnStrategy:
 
 class AnimationStrategy:
 
-    def setGame(self, game):
-        self.game = game
+    def __init__(self, game, screen, eventName, eventData):
+        self._game = game
+        self._screen = screen
+        self._name = eventName
+        self._data = eventData
+        self.shipToAnimate = screen.findShipUI(eventData)
+        self.shipToAnimate.animate(Explode())
 
     def shipHovered(self, shipUI):
         True
 
     def shipClicked(self, shipUI):
-        self.game.strategyEvent(BaseController.ANIMATION_DONE)
+        self._done()
 
     def actionClicked(self, actionUI):
-        self.game.strategyEvent(BaseController.ANIMATION_DONE)
+        self._done()
 
     def actionConfirmed(self):
-        self.game.strategyEvent(BaseController.ANIMATION_DONE)
+        self._done()
 
     def event(self, name, data):
         True
+
+    def _done(self):
+        self.shipToAnimate.stopAnimation()
+        self._game.strategyEvent(BaseController.ANIMATION_DONE)

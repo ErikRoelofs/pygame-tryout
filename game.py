@@ -97,7 +97,8 @@ def main():
 		trackCoords(fontObj, mousex, mousey, clock.get_fps())
 
 		pygame.display.update()
-		clock.tick(60)
+		dt = clock.tick(60)
+		main.update(dt)
 
 def trackCoords(fontObj, mousex, mousey, fps):
 		textSurfaceObj = fontObj.render(str(mousex) + ', ' + str(mousey) + ' @' + str(fps) + 'fps', True, GREEN, BLUE)
