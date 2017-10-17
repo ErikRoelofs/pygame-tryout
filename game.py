@@ -99,6 +99,7 @@ def main():
 		pygame.display.update()
 		dt = clock.tick(60)
 		main.update(dt)
+		controller.nextFrame()
 
 def trackCoords(fontObj, mousex, mousey, fps):
 		textSurfaceObj = fontObj.render(str(mousex) + ', ' + str(mousey) + ' @' + str(fps) + 'fps', True, GREEN, BLUE)

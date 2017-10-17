@@ -39,7 +39,7 @@ class MainScreen():
     def clicked(self, mousex, mousey):
         for child in self.elements:
             child.entity.clicked(mousex - child.position[0], mousey - child.position[1])
-        self._controller.nextFrame()
+        #self._controller.nextFrame()
 
     def findShipUI(self, ship):
         for element in self.elements:

@@ -202,15 +202,12 @@ class BaseController:
         self.strategy.actionConfirmed()
 
     def nextFrame(self):
-        if self._queuedEvent and self._queuedEvent[0] == 1:
+        if not isinstance(self.strategy, AnimationStrategy) and self._queuedEvent and self._queuedEvent[0] == 1:
             self.strategy = AnimationStrategy(self, self._screen, self._queuedEvent[0], self._queuedEvent[1])
 
     def event(self, name, data):
         if name == 1:
             self._queuedEvent = (name, data)
-        #self.strategy = AnimationStrategy()
-        #self.strategy.setGame(self)
-        #self.strategy.event(name, data)
 
     def resolveEvent(self, name, data):
         self.strategy.event(name, data)
@@ -298,7 +295,7 @@ class AnimationStrategy:
         self._name = eventName
         self._data = eventData
         self.shipToAnimate = screen.findShipUI(eventData)
-        self.shipToAnimate.animate(Explode())
+        self.shipToAnimate.animate(Explode(self))
 
     def shipHovered(self, shipUI):
         True
@@ -315,6 +312,6 @@ class AnimationStrategy:
     def event(self, name, data):
         True
 
-    def _done(self):
+    def done(self):
         self.shipToAnimate.stopAnimation()
         self._game.strategyEvent(BaseController.ANIMATION_DONE)

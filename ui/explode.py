@@ -1,11 +1,13 @@
 import pygame, ship, random
 
 class Explode:
-    def __init__(self):
+    def __init__(self, controller):
         temp = pygame.Surface((ship.SHIP_WIDTH,ship.SHIP_HEIGHT))
         self._surface = pygame.Surface.convert_alpha(temp)
         self.size = 10
+        self.duration = 1000
         self.blasts = []
+        self._controller = controller
 
     def update(self, dt):
         for blast in self.blasts:
@@ -14,6 +16,10 @@ class Explode:
                 self.blasts.remove(blast)
         if random.randint(1,60) < dt:
             self._addExplosion()
+
+        self.duration -= dt
+        if self.duration <= 0:
+            self._controller.done()
 
     def draw(self):
         self._surface.fill((0, 0, 0, 0))
