@@ -20,11 +20,6 @@ class Shiplane(entity.Entity):
 
     def draw(self):
         self._surface.fill(BG_COLOR)
-        self.unhighlightAll()
-        if self._mousePosition:
-            theShip = self.findUIAtPosition(self._mousePosition[0], self._mousePosition[1])
-            if theShip:
-                theShip.highlight(True)
 
         for index, ui in enumerate(self.shipUIs):
             self._surface.blit(ui.draw(), (index * (SHIP_GAP + ship.SHIP_WIDTH), 0))
@@ -36,9 +31,12 @@ class Shiplane(entity.Entity):
         return True
 
     def setMousePosition(self, mousex, mousey):
+        self.unhighlightAll()
         if mousex >= 0 and mousex <= self._size[0] and mousey >= 0 and mousey <= self._size[1]:
             self._mousePosition = (mousex, mousey)
-
+            theShip = self.findUIAtPosition(mousex, mousey)
+            if theShip:
+                self._controller.shipHovered(theShip)
         else:
             self._mousePosition = None
 
@@ -80,9 +78,9 @@ class Shiplane(entity.Entity):
         if name == "hovered":
             for ship in self.shipUIs:
                 if ship == target:
-                    ship.hovered(True)
+                    ship.highlight(True)
                 else:
-                    ship.hovered(False)
+                    ship.highlight(False)
 
         if name == "destroyed":
             for ui in self.shipUIs:

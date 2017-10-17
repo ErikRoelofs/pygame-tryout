@@ -183,6 +183,7 @@ class BaseController:
         event.addListener(self, [])
         self.player1.setGame(self)
         self.player2.setGame(self)
+        self._queuedEvent = None
 
     def shipHovered(self, shipUI):
         self.strategy.shipHovered(shipUI)
@@ -199,7 +200,19 @@ class BaseController:
     def actionConfirmed(self):
         self.strategy.actionConfirmed()
 
+    def nextFrame(self):
+        if self._queuedEvent and self._queuedEvent[0] == 1:
+            self.strategy = AnimationStrategy()
+            self.strategy.setGame(self)
+
     def event(self, name, data):
+        if name == 1:
+            self._queuedEvent = (name, data)
+        #self.strategy = AnimationStrategy()
+        #self.strategy.setGame(self)
+        #self.strategy.event(name, data)
+
+    def resolveEvent(self, name, data):
         self.strategy.event(name, data)
 
     def strategyEvent(self, type):
@@ -216,6 +229,11 @@ class BaseController:
                 self.strategy = self.player1
             else:
                 self.strategy = self.player2
+            self.resolveEvent(self._queuedEvent[0], self._queuedEvent[1])
+            self._queuedEvent = None
+
+    def addElement(self, element):
+        self._screen.addElement(element)
 
 class PlayerTurnStrategy:
     def __init__(self, playerShips, opponentShips):
@@ -262,7 +280,7 @@ class PlayerTurnStrategy:
         self.selectedOpponentShip = None
         self.selectedAction = None
         self._broadcast("all-unselected", None)
-        self.game.strategyEvent(BaseController.TURN_END)
+        #self.game.strategyEvent(BaseController.TURN_END)
 
     def event(self, name, data):
         if name == 1:

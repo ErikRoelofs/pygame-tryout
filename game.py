@@ -1,12 +1,10 @@
-import animations, classes, dice, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane, ui.container
+import classes, event, pygame, shiplibrary, sys, ui.mainscreen, ui.entity, ui.element, ui.shiplane, ui.container
 from pygame.locals import *
-from ui.actionbar import ActionBar
 from ui.colors import *
 
 """
-	- write out attack result
-	- destruction
-	- return fire
+	- rework animations
+	- AI strategy
 	- good animations
 	- separate this part of the game into a module
 	

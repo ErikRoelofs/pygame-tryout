@@ -13,18 +13,31 @@ class Ship(entity.Entity):
         self.font = font
         self._highlighted = False
         self._selected = False
+        self._modified = True
+        self._animation = None
 
     def draw(self):
-        return drawShip(self.font, self._ship, self._selected, self._highlighted)
+        if self._modified:
+            self.redraw()
+        return self._surface
+
+    def redraw(self):
+        image = drawShip(self.font, self._ship, self._selected, self._highlighted)
+        self._surface.blit(image, (0,0))
+        self._modified = False
 
     def update(self, dt):
         return True
 
     def highlight(self, value):
-        self._highlighted = value
+        if self._highlighted != value:
+            self._highlighted = value
+            self._modified = True
 
     def selected(self, value):
-        self._selected = value
+        if self._selected != value:
+            self._selected = value
+            self._modified = True
 
     def ship(self):
         return self._ship
